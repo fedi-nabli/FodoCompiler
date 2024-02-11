@@ -26,5 +26,9 @@ all: ${OBJECTS}
 	gcc ./helpers/vector.c -o ./build/helpers/vector.o -g -c
 
 clean:
-	rm ./main
+	if [ -f ./main ] ; \
+	then \
+		rm ./main ; \
+	fi;
+	
 	rm -rf ${OBJECTS}
