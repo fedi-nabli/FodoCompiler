@@ -3,6 +3,7 @@
 #include "helpers/buffer.h"
 
 #include <string.h>
+#include <assert.h>
 
 #define LEX_GETC_IF(buffer, c, exp)   \
   for (c = peekc(); exp; c = peekc()) \
@@ -87,12 +88,34 @@ unsigned long long read_number()
 
 struct token* token_make_number_for_value(unsigned long number)
 {
-  return token_create(&(struct token){.type = TOKEN_TYPE_NUMBER, .llnum = number});
+  return token_create(&(struct token){.type=TOKEN_TYPE_NUMBER, .llnum=number});
 }
 
 struct token* token_make_number()
 {
   return token_make_number_for_value(read_number());
+}
+
+static struct token* token_make_string(char start_delim, char end_delim)
+{
+  struct buffer* buffer = buffer_create();
+  assert(nextc() == start_delim);
+  char c = nextc();
+
+  for (; c != end_delim && c != EOF; c = nextc())
+  {
+    if (c == '\\')
+    {
+      // We need to handle an escape character
+      continue;
+    }
+
+    buffer_write(buffer, c);
+  }
+
+  buffer_write(buffer, 0x00);
+
+  return token_create(&(struct token){.type=TOKEN_TYPE_STRING, .sval=buffer_ptr(buffer)});
 }
 
 struct token* read_next_token()
@@ -103,6 +126,10 @@ struct token* read_next_token()
   {
     NUMERIC_CASE:
       token = token_make_number();
+      break;
+
+    case '"':
+      token = token_make_string('"', '"');
       break;
 
     // We don't care about whitespaces, ignore them
