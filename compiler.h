@@ -2,7 +2,11 @@
 #define FODOCOMPILER_H
 
 #include <stdio.h>
+#include <string.h>
 #include <stdbool.h>
+
+#define S_EQ(str, str2) \
+        (str && str2 && (strcmp(str, str2) == 0))
 
 // Lexer definitions
 #define NUMERIC_CASE  \
@@ -16,6 +20,25 @@
   case '7':           \
   case '8':           \
   case '9'
+
+#define OPERATOR_CASE_EXCLUDING_DIVISION  \
+  case '+':                               \
+  case '-':                               \
+  case '*':                               \
+  case '>':                               \
+  case '<':                               \
+  case '^':                               \
+  case '%':                               \
+  case '!':                               \
+  case '=':                               \
+  case '~':                               \
+  case '|':                               \
+  case '&':                               \
+  case '(':                               \
+  case '[':                               \
+  case ',':                               \
+  case '.':                               \
+  case '?'
 
 enum
 {
@@ -139,5 +162,8 @@ struct lex_process* lex_process_create(struct compile_process* compiler, struct 
 void lex_process_free(struct lex_process* process);
 void* lex_process_private(struct lex_process* process);
 struct vector* lex_process_tokens(struct lex_process* process);
+
+// Token helper functions
+bool token_is_keyword(struct token* token, const char* value);
 
 #endif
