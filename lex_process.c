@@ -10,6 +10,7 @@ struct lex_process* lex_process_create(struct compile_process* compiler, struct 
   process->function = functions;
   process->compiler = compiler;
   process->private = private;
+  process->pos.filename = compiler->cfile.abs_path;
   process->pos.line = 1;
   process->pos.col = 1;
   return process;
