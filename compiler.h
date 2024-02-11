@@ -40,6 +40,18 @@
   case '.':                               \
   case '?'
 
+#define SYMBOL_CASE \
+  case '{':         \
+  case '}':         \
+  case ':':         \
+  case ';':         \
+  case '#':         \
+  case '\\':        \
+  case ')':         \
+  case ']'
+
+// Lexer case defintions end
+
 enum
 {
   COMPILER_FILE_COMPILED_OK,
