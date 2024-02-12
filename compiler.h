@@ -169,6 +169,15 @@ void compile_process_push_char(struct lex_process* lex_process, char c);
 // Lexer functions
 int lex(struct lex_process* process);
 
+/**
+ * @brief Builds tokens for the input string
+ * 
+ * @param compiler struct compile_process*
+ * @param str const char*
+ * @return struct lex_process* 
+ */
+struct lex_process* tokens_build_for_string(struct compile_process* compiler, const char* str);
+
 // Lexer process functions
 struct lex_process* lex_process_create(struct compile_process* compiler, struct lex_process_functions* functions, void* private);
 void lex_process_free(struct lex_process* process);
