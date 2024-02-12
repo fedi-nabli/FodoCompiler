@@ -356,6 +356,12 @@ static struct token* read_special_token()
   return NULL;
 }
 
+struct token* token_make_newline()
+{
+  nextc();
+  return token_create(&(struct token){.type=TOKEN_TYPE_NEWLINE});
+}
+
 struct token* read_next_token()
 {
   struct token* token = NULL;
@@ -382,6 +388,17 @@ struct token* read_next_token()
     case ' ':
     case '\t':
       token = handle_whitespace();
+      break;
+
+    // In windows formatted file, a new line is formatted ar '\r\n',
+    // we just ignore the '\r' and parse the '\n' as a newline token
+    case '\r':
+      nextc();
+      token = token_make_newline();
+      break;
+
+    case '\n':
+      token = token_make_newline();
       break;
 
     case EOF:
