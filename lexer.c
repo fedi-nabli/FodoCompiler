@@ -112,9 +112,30 @@ unsigned long long read_number()
   return atoll(str);
 }
 
+int lexer_number_type(char c)
+{
+  int res = NUMBER_TYPE_NORMAL;
+  if (c == 'L')
+  {
+    res = NUMBER_TYPE_LONG;
+  }
+  else if (c == 'f')
+  {
+    res = NUMBER_TYPE_FLOAT;
+  }
+
+  return res;
+}
+
 struct token* token_make_number_for_value(unsigned long number)
 {
-  return token_create(&(struct token){.type=TOKEN_TYPE_NUMBER, .llnum=number});
+  int number_type = lexer_number_type(peekc());
+  if (number_type != NUMBER_TYPE_NORMAL)
+  {
+    nextc();
+  }
+
+  return token_create(&(struct token){.type=TOKEN_TYPE_NUMBER, .llnum=number, .num.type=number_type});
 }
 
 struct token* token_make_number()
@@ -652,6 +673,9 @@ int lex(struct lex_process* process)
 
   return LEXICAL_ANALYSIS_ALL_OK;
 }
+
+// Functions to create tokens from an input string that is
+// outside of the input file
 
 char lexer_string_buffer_next_char(struct lex_process* process)
 {
