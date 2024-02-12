@@ -1,3 +1,8 @@
+gerog erlgermo
+skgm5845
+int
+long
+
 // Hello world
 
 /**
@@ -5,4 +10,4 @@
  * 
  */
 
-double
+'\n'
