@@ -134,6 +134,12 @@ enum
 
 // Node types enum end
 
+// Node flags enum
+enum
+{
+  NODE_FLAG_INSIDE_EXPRESSION = 0b00000001
+};
+
 struct pos
 {
   int line;
@@ -240,6 +246,16 @@ struct node
 
   union
   {
+    struct exp
+    {
+      struct node* left;
+      struct node* right;
+      const char* op;
+    } exp;
+  };
+
+  union
+  {
     char cval;
     const char* sval;
     unsigned int inum;
@@ -295,7 +311,10 @@ void node_push(struct node* node);
 struct node* node_peek_or_null();
 struct node* node_peek();
 struct node* node_pop();
+bool node_is_expressionable(struct node* node);
+struct node* node_peek_expressionable_or_null();
 struct node* node_create(struct node* _node);
+void make_exp_node(struct node* left_node, struct node* right_node, const char* op);
 
 // > Node function end
 
