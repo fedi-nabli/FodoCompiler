@@ -65,6 +65,13 @@ enum
   LEXICAL_ANALYSIS_INPUT_ERROR
 };
 
+// Parser enums
+enum
+{
+  PARSE_ALL_OK,
+  PARSE_GENERAL_ERROR
+};
+
 // Token types enum
 enum
 {
@@ -207,6 +214,9 @@ struct compile_process
   // A vector of tokens from lexical analysis
   struct vector* token_vec;
 
+  struct vector* node_vec;
+  struct vector* node_tree_vec;
+
   FILE* ofile;
 };
 
@@ -255,6 +265,8 @@ void compile_process_push_char(struct lex_process* lex_process, char c);
 
 // Lexer functions
 int lex(struct lex_process* process);
+// Parse function
+int parse(struct compile_process* process);
 
 /**
  * @brief Builds tokens for the input string
