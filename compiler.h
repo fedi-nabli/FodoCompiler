@@ -140,6 +140,25 @@ enum
   NODE_FLAG_INSIDE_EXPRESSION = 0b00000001
 };
 
+// < Expressionable definitions start
+
+#define TOTAL_OPERATOR_GROUPS 14
+#define MAX_OPERATORS_IN_GROUP 12
+
+enum
+{
+  ASSOCIATIVITY_LEFT_TO_RIGHT,
+  ASSOCIATIVITY_RIGHT_TO_LEFT
+};
+
+struct expressionable_op_precedence_group
+{
+  char* operators[MAX_OPERATORS_IN_GROUP];
+  int associativity;
+};
+
+// > Expressionable definitions end
+
 struct pos
 {
   int line;
