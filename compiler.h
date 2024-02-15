@@ -177,6 +177,13 @@ enum
   DATA_TYPE_UNKNOWN
 };
 
+enum
+{
+  DATA_TYPE_EXPECT_PRIMITIVE,
+  DATA_TYPE_EXPECT_UNION,
+  DATA_TYPE_EXPECT_STRUCT
+};
+
 // > Data type enum end
 
 #define TOTAL_OPERATOR_GROUPS 14
@@ -388,7 +395,12 @@ struct vector* lex_process_tokens(struct lex_process* process);
 // Token helper functions
 bool token_is_keyword(struct token* token, const char* value);
 bool token_is_symbol(struct token* token, char c);
+bool token_is_operator(struct token* token, const char* val);
 bool token_is_nl_comment_or_newline_seperator(struct token* token);
+bool token_is_primitive_keyword(struct token* token);
+
+// Datatype helper functions
+bool datatype_is_struct_or_union_for_name(const char* name);
 
 // < Node functions start
 
