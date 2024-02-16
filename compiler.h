@@ -277,6 +277,24 @@ struct lex_process
   void* private;
 };
 
+// < Scope structure start
+
+struct scope
+{
+  int flags;
+
+  // type of void*
+  struct vector* entities;
+
+  // The total number of bytes this scope uses. Aligned to 16 bits
+  size_t size;
+
+  // NULL if no parent
+  struct scope* parent;
+};
+
+// > Scope structure end
+
 struct compile_process
 {
   // The flags in regards to how this file should be compiled
@@ -296,6 +314,12 @@ struct compile_process
   struct vector* node_tree_vec;
 
   FILE* ofile;
+
+  struct
+  {
+    struct scope* root;
+    struct scope* current;
+  } scope;
 };
 
 // < Node structure start
