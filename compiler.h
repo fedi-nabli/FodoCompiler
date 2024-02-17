@@ -195,6 +195,17 @@ enum
 
 // > Data type enum end
 
+// < Symbol type enum start
+
+enum
+{
+  SYMBOL_TYPE_NODE,
+  SYMBOL_TYPE_NATIVE_FUNCTION,
+  SYMBOL_TYPE_UNKNOWN
+};
+
+// > Symnol type enum end
+
 #define TOTAL_OPERATOR_GROUPS 14
 #define MAX_OPERATORS_IN_GROUP 12
 
@@ -320,7 +331,27 @@ struct compile_process
     struct scope* root;
     struct scope* current;
   } scope;
+
+  struct
+  {
+    // Current active symbol table, struct symbol*
+    struct vector* table;
+
+    // Multiple symbol tables stored in here, struct vector*
+    struct vector* tables;
+  } symbols;
 };
+
+// < Symbol structure start
+
+struct symbol
+{
+  const char* name;
+  int type;
+  void* data;
+};
+
+// > Symbol structure end
 
 // < Node structure start
 
