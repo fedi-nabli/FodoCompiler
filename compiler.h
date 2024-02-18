@@ -353,6 +353,16 @@ struct symbol
 
 // > Symbol structure end
 
+// < Array brackets structure start
+
+struct array_brackets
+{
+  // A vector of struct node*
+  struct vector* n_brackets;
+};
+
+// > Array brackets structure end
+
 // < Dataype structure start
 
 struct node;
@@ -377,9 +387,17 @@ struct datatype
     struct node* struct_node;
     struct node* union_node;
   };
+
+  struct array
+  {
+    struct array_brackets* brackets;
+    
+    // The total array size: equation = DATATYPE_SIZE * EACH_INDEX
+    size_t size;
+  } array;
 };
 
-// > Datayê structure end
+// > Dataype structure end
 
 // < Node structure start
 
@@ -420,6 +438,12 @@ struct node
       // A list of struct node* variables
       struct vector* list; 
     } var_list;
+
+    struct bracket
+    {
+      // int x[50]; [50] would be out bracket node. The inner node would be NODE_TYPE_VARIABLE with a value of 50
+      struct node* inner;
+    } bracket;
   };
 
   union
@@ -491,7 +515,20 @@ bool node_is_expressionable(struct node* node);
 struct node* node_peek_expressionable_or_null();
 struct node* node_create(struct node* _node);
 void make_exp_node(struct node* left_node, struct node* right_node, const char* op);
+void make_bracker_node(struct node* node);
 
 // > Node function end
+
+// < Array helper funtions start
+
+struct array_brackets* array_brackets_new();
+void array_brackets_free(struct array_brackets* brackets);
+void array_brackets_add(struct array_brackets* brackets, struct node* bracket_node);
+struct vector* array_brackets_node_vector(struct array_brackets* brackets);
+size_t array_brackets_calculate_size_from_index(struct datatype* dtype, struct array_brackets* brackets, int index);
+size_t array_brackets_calculate_size(struct datatype* dtype, struct array_brackets* brackets);
+int array_total_indexes(struct datatype* dtype);
+
+// > Array helper functions end
 
 #endif
