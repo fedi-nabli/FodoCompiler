@@ -353,6 +353,34 @@ struct symbol
 
 // > Symbol structure end
 
+// < Dataype structure start
+
+struct node;
+struct datatype
+{
+  int flags;
+  // i.e type of long, int, float etc...
+  int type;
+
+  // i.e long int, int being the secondary
+  struct datatype* secondary;
+
+  // long
+  const char* type_str;
+
+  // The size of the datatype
+  size_t size;
+  int pointer_depth;
+
+  union
+  {
+    struct node* struct_node;
+    struct node* union_node;
+  };
+};
+
+// > Datayê structure end
+
 // < Node structure start
 
 struct node
@@ -379,6 +407,13 @@ struct node
       struct node* right;
       const char* op;
     } exp;
+
+    struct var
+    {
+      struct datatype type;
+      const char* name;
+      struct node* val;
+    } var;
   };
 
   union
@@ -392,33 +427,6 @@ struct node
 };
 
 // > Node structure end
-
-// < Dataype structure start
-
-struct datatype
-{
-  int flags;
-  // i.e type of long, int, float etc...
-  int type;
-
-  // i.e long int, int being the secondary
-  struct datatype* secondary;
-
-  // long
-  const char* type_str;
-
-  // The size of the datatype
-  size_t size;
-  int pointer_depth;
-
-  union
-  {
-    struct node* struct_node;
-    struct node* union_node;
-  };
-};
-
-// > Datayê structure end
 
 // Compiler error & warning functions
 void compiler_error(struct compile_process* compiler, const char* msg, ...);
