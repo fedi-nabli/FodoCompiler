@@ -58,7 +58,7 @@ void scope_iteration_start(struct scope* scope)
   }
 }
 
-void scope_iteration_end()
+void scope_iteration_end(struct scope* scope)
 {
   // This function is just used to visually determine the start and end
   // it has no real functionality
