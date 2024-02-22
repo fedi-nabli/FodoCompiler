@@ -460,6 +460,21 @@ struct node
        */
       struct node* var;
     } _struct;
+
+    struct body
+    {
+      // struct node* vector of statements
+      struct vector* statements;
+
+      // The size of combined variables inside this body
+      size_t size;
+
+      // True if the variable size has to be increased due to padding in the body
+      bool padded;
+
+      // A pointer to the largest variable node in the statements vector
+      struct node* largest_var_node;
+    } body;
   };
 
   union
@@ -533,6 +548,7 @@ struct node* node_peek_expressionable_or_null();
 struct node* node_create(struct node* _node);
 void make_exp_node(struct node* left_node, struct node* right_node, const char* op);
 void make_bracker_node(struct node* node);
+void make_body_node(struct vector* body_vec, size_t size, bool padded, struct node* largest_var_node);
 
 // > Node function end
 
