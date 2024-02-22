@@ -429,6 +429,7 @@ struct node
     struct var
     {
       struct datatype type;
+      int padding;
       const char* name;
       struct node* val;
     } var;
@@ -604,6 +605,10 @@ size_t variable_size(struct node* var_node);
  * @return size_t The sum of all variable node sizes in the list
  */
 size_t variable_size_for_list(struct node* var_list_node);
+int padding(int val, int to);
+int align_value(int val, int to);
+int align_value_treat_positive(int val, int to);
+int compute_sum_padding(struct vector* vec);
 
 // > General helper functions end
 
