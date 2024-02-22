@@ -586,4 +586,25 @@ int array_total_indexes(struct datatype* dtype);
 
 // > Array helper functions end
 
+// < General helper functions start
+
+/**
+ * @brief Gets the variable size from the given variable node
+ * 
+ * @param var_node 
+ * @return size_t 
+ */
+size_t variable_size(struct node* var_node);
+
+/**
+ * @brief Sums the variable size of all variable nodes inside the variable list node
+ * Returns the result
+ * 
+ * @param var_list_node 
+ * @return size_t The sum of all variable node sizes in the list
+ */
+size_t variable_size_for_list(struct node* var_list_node);
+
+// > General helper functions end
+
 #endif
