@@ -688,6 +688,10 @@ void parser_body_single_statement(size_t* variable_size, struct vector* body_vec
   node_push(body_node);
 }
 
+/**
+ * @param variable_size Set to the sum of all variable sizes encountered in the parsed body 
+ * @param history 
+ */
 void parse_body(size_t* variable_size, struct history* history)
 {
   parser_scope_new();
