@@ -535,6 +535,10 @@ bool token_is_primitive_keyword(struct token* token);
 // Datatype helper functions
 bool datatype_is_struct_or_union_for_name(const char* name);
 bool datatype_is_struct_or_union(struct datatype* dtype);
+size_t datatype_size(struct datatype* dtype);
+size_t datatype_size_for_array_access(struct datatype* dtype);
+size_t datatype_element_size(struct datatype* dtype);
+size_t datatype_size_no_ptr(struct datatype* dtype);
 
 // < Node functions start
 
