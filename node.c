@@ -54,6 +54,16 @@ bool node_is_expressionable(struct node* node)
          node->type == NODE_TYPE_STRING;
 }
 
+bool node_is_struct_or_union_variable(struct node* node)
+{
+  if (node->type != NODE_TYPE_VARIABLE)
+  {
+    return false;
+  }
+
+  return datatype_is_struct_or_union(&node->var.type);
+}
+
 struct node* node_peek_expressionable_or_null()
 {
   struct node* last_node = node_peek_or_null();

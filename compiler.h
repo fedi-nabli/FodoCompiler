@@ -549,6 +549,7 @@ struct node* node_peek_or_null();
 struct node* node_peek();
 struct node* node_pop();
 bool node_is_expressionable(struct node* node);
+bool node_is_struct_or_union_variable(struct node* node);
 struct node* node_peek_expressionable_or_null();
 struct node* node_create(struct node* _node);
 void make_exp_node(struct node* left_node, struct node* right_node, const char* op);
@@ -605,6 +606,7 @@ size_t variable_size(struct node* var_node);
  * @return size_t The sum of all variable node sizes in the list
  */
 size_t variable_size_for_list(struct node* var_list_node);
+struct node* variable_struct_or_union_body_node(struct node* node);
 int padding(int val, int to);
 int align_value(int val, int to);
 int align_value_treat_positive(int val, int to);
