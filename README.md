@@ -1,6 +1,6 @@
 ![cpp workflow](https://github.com/FodoOS/FodoCompiler/actions/workflows/c-cpp-build.yml/badge.svg)
 
-# PeachCompiler
+# FodoCompiler
 
 Fodo Compiler is a simple C project made for compiling C projects and file into x86 32-bit machine code.
 This compiler is made fully in C. It is 32-bit compatible.
