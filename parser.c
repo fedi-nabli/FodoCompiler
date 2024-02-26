@@ -564,7 +564,7 @@ void parse_datatype_type(struct datatype* dtype)
   int expected_type = parser_datatype_expected_for_type_string(datatype_token->sval);
   if (datatype_is_struct_or_union_for_name(datatype_token->sval))
   {
-    if (token_peek_next()->type == NODE_TYPE_IDENTIFIER)
+    if (token_peek_next()->type == TOKEN_TYPE_IDENTIFIER)
     {
       datatype_token = token_next();
     }
