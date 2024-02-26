@@ -90,6 +90,8 @@ void parse_expressionable(struct history* history);
 int parse_expressionable_single(struct history* history);
 void parser_datatype_init_type_and_size_for_primitive(struct token* datatype_token, struct token* datatype_secondary_token, struct datatype* datatype_out);
 void parser_append_size_for_node(struct history* history, size_t* _variable_size, struct node* node);
+void parse_body(size_t* variable_size, struct history* history);
+void parse_keyword(struct history* history);
 
 void parser_scope_new()
 {
@@ -697,7 +699,6 @@ void make_variable_node_and_register(struct history* history, struct datatype* d
   make_variable_node(dtype, name_token, value_node);
   struct node* var_node = node_pop();
 
-  #warning "Remember to calculate scope offsets and push to the scope"
   // Claculate the scope offset
   parser_scope_offset(var_node, history);
   // Push the variable node to the scope
