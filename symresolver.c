@@ -60,7 +60,7 @@ struct symbol* symresolver_get_symbol_for_native_function(struct compile_process
   return symbol;
 }
 
-struct symbol* symresolver_register_model(struct compile_process* process, const char* sym_name, int type, void* data)
+struct symbol* symresolver_register_symbol(struct compile_process* process, const char* sym_name, int type, void* data)
 {
   if (symresolver_get_symbol(process, sym_name))
   {
@@ -97,7 +97,13 @@ void symresolver_build_for_function_node(struct compile_process* process, struct
 
 void symresolver_build_for_structure_node(struct compile_process* process, struct node* node)
 {
-  compiler_error(process, "Structures are not yet supported\n");
+  if (node->flags & NODE_FLAG_IS_FORWARD_DECLARATION)
+  {
+    // We do not register forward declarations
+    return;
+  }
+
+  symresolver_register_symbol(process, node->_struct.name, SYMBOL_TYPE_NODE, node);
 }
 
 void symresolver_build_for_union_node(struct compile_process* process, struct node* node)

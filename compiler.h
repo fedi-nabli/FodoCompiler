@@ -137,7 +137,9 @@ enum
 // Node flags enum
 enum
 {
-  NODE_FLAG_INSIDE_EXPRESSION = 0b00000001
+  NODE_FLAG_INSIDE_EXPRESSION = 0b00000001,
+  NODE_FLAG_IS_FORWARD_DECLARATION = 0b00000010,
+  NODE_FLAG_HAS_VARIABLE_COMBINED = 0b00000100
 };
 
 // < Expressionable definitions start
@@ -561,6 +563,7 @@ struct node* node_create(struct node* _node);
 void make_exp_node(struct node* left_node, struct node* right_node, const char* op);
 void make_bracker_node(struct node* node);
 void make_body_node(struct vector* body_vec, size_t size, bool padded, struct node* largest_var_node);
+void make_struct_node(const char* name, struct node* body_node);
 
 // > Node function end
 
@@ -593,6 +596,12 @@ size_t array_brackets_calculate_size(struct datatype* dtype, struct array_bracke
 int array_total_indexes(struct datatype* dtype);
 
 // > Array helper functions end
+
+// < Symbol resolver helper functions start
+
+void symresolver_build_for_structure_node(struct compile_process* process, struct node* node);
+
+// > Symbol resolver helper functions end
 
 // < General helper functions start
 
