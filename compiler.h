@@ -564,6 +564,9 @@ void make_exp_node(struct node* left_node, struct node* right_node, const char* 
 void make_bracker_node(struct node* node);
 void make_body_node(struct vector* body_vec, size_t size, bool padded, struct node* largest_var_node);
 void make_struct_node(const char* name, struct node* body_node);
+struct node* node_from_sym(struct symbol* sym);
+struct node* node_from_symbol(struct compile_process* current_process, const char* name);
+struct node* struct_node_for_name(struct compile_process* current_process, const char* name);
 
 // > Node function end
 
@@ -599,6 +602,7 @@ int array_total_indexes(struct datatype* dtype);
 
 // < Symbol resolver helper functions start
 
+struct symbol* symresolver_get_symbol(struct compile_process* process, const char* name);
 void symresolver_build_for_structure_node(struct compile_process* process, struct node* node);
 
 // > Symbol resolver helper functions end
