@@ -602,6 +602,9 @@ int array_total_indexes(struct datatype* dtype);
 
 // < Symbol resolver helper functions start
 
+void symresolver_initialize(struct compile_process* process);
+void symresolver_new_table(struct compile_process* process);
+void symresolver_end_table(struct compile_process* process);
 struct symbol* symresolver_get_symbol(struct compile_process* process, const char* name);
 void symresolver_build_for_structure_node(struct compile_process* process, struct node* node);
 
