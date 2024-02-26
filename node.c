@@ -97,6 +97,16 @@ struct node* variable_node(struct node* node)
   return var_node;
 }
 
+struct node* variable_node_or_list(struct node* node)
+{
+  if (node->type == NODE_TYPE_VARIABLE_LIST)
+  {
+    return node;
+  }
+
+  return variable_node(node);
+}
+
 struct node* node_create(struct node* _node)
 {
   struct node* node = malloc(sizeof(struct node));
