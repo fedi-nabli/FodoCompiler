@@ -10,6 +10,11 @@ bool datatype_is_struct_or_union(struct datatype* dtype)
   return dtype->type == DATA_TYPE_STRUCT || dtype->type == DATA_TYPE_UNION;
 }
 
+bool datatype_is_primitive(struct datatype* dtype)
+{
+  return !datatype_is_struct_or_union(dtype);
+}
+
 size_t datatype_size(struct datatype* dtype)
 {
   if (dtype->flags & DATATYPE_FLAG_IS_POINTER && dtype->pointer_depth > 0)

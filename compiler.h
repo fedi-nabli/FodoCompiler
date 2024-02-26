@@ -430,6 +430,8 @@ struct node
     {
       struct datatype type;
       int padding;
+      // Aligned offset
+      int aoffset;
       const char* name;
       struct node* val;
     } var;
@@ -536,6 +538,7 @@ bool token_is_primitive_keyword(struct token* token);
 // Datatype helper functions
 bool datatype_is_struct_or_union_for_name(const char* name);
 bool datatype_is_struct_or_union(struct datatype* dtype);
+bool datatype_is_primitive(struct datatype* dtype);
 size_t datatype_size(struct datatype* dtype);
 size_t datatype_size_for_array_access(struct datatype* dtype);
 size_t datatype_element_size(struct datatype* dtype);
@@ -550,7 +553,9 @@ struct node* node_peek();
 struct node* node_pop();
 bool node_is_expressionable(struct node* node);
 bool node_is_struct_or_union_variable(struct node* node);
+bool variable_node_is_primitive(struct node* node);
 struct node* node_peek_expressionable_or_null();
+struct node* variable_node(struct node* node);
 struct node* node_create(struct node* _node);
 void make_exp_node(struct node* left_node, struct node* right_node, const char* op);
 void make_bracker_node(struct node* node);
