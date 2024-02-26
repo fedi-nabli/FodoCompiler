@@ -743,7 +743,15 @@ void parse_variable(struct datatype* dtype, struct token* name_token, struct his
 
 void parse_symbol()
 {
-  compiler_error(current_process, "Symbols are not yet supported\n");
+  if (token_next_is_symbol('{'))
+  {
+    size_t variable_size = 0;
+    struct history* history = history_begin(HISTORY_FLAG_IS_GLOBAL_SCOPE);
+    parse_body(&variable_size, history);
+    struct node* body_node = node_pop();
+
+    node_push(body_node);
+  }
 }
 
 void parse_statement(struct history* history)
@@ -806,7 +814,7 @@ void parser_append_size_for_node(struct history* history, size_t* _variable_size
       return;
     }
 
-    *_variable_size = variable_size(node);
+    *_variable_size += variable_size(node);
   }
   else if (node->type == NODE_TYPE_VARIABLE_LIST)
   {
@@ -1107,6 +1115,10 @@ int parse_next()
 
     case TOKEN_TYPE_KEYWORD:
       parse_keyword_for_global();
+      break;
+
+    case TOKEN_TYPE_SYMBOL:
+      parse_symbol();
       break;
   }
 

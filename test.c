@@ -1,8 +1,4 @@
-struct abc
 {
-  int a;
-  int b;
-};
-
-if (x)
-  y = 30;
+  int x;
+  int y;
+}
