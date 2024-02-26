@@ -531,6 +531,7 @@ void* lex_process_private(struct lex_process* process);
 struct vector* lex_process_tokens(struct lex_process* process);
 
 // Token helper functions
+bool token_is_identifier(struct token* token);
 bool token_is_keyword(struct token* token, const char* value);
 bool token_is_symbol(struct token* token, char c);
 bool token_is_operator(struct token* token, const char* val);
