@@ -7,6 +7,7 @@ static struct compile_process* current_process;
 static struct token* parser_last_token;
 
 extern struct node* parser_current_body;
+extern struct node* parser_current_function;
 extern struct expressionable_op_precedence_group op_precedence[TOTAL_OPERATOR_GROUPS];
 
 // < Parser scope start
@@ -57,7 +58,8 @@ enum
   HISTORY_FLAG_INSIDE_UNION = 0b00000001,
   HISTORY_FLAG_IS_UPWARD_STACK = 0b00000010,
   HISTORY_FLAG_IS_GLOBAL_SCOPE = 0b00000100,
-  HISTORY_FLAG_INSIDE_STRUCTURE = 0b00001000
+  HISTORY_FLAG_INSIDE_STRUCTURE = 0b00001000,
+  HISTORY_FLAG_INSIDE_FUNCTION_BODY = 0b00010000
 };
 
 /**
@@ -975,6 +977,48 @@ void parse_body(size_t* variable_size, struct history* history)
   #warning "Don't forget to adjust the function stack size"
 }
 
+void parse_function_body(struct history* history)
+{
+  parse_body(NULL, history_down(history, history->flags | HISTORY_FLAG_INSIDE_FUNCTION_BODY));
+}
+
+void parse_function(struct datatype* ret_type, struct token* name_token, struct history* history)
+{
+  struct vector* arguments_vector = NULL;
+  parser_scope_new();
+  make_function_node(ret_type, name_token->sval, NULL, NULL);
+  struct node* function_node = node_peek();
+  parser_current_function = function_node;
+  if (datatype_is_struct_or_union(ret_type))
+  {
+    function_node->func.args.stack_addition += DATA_SIZE_DWORD;
+  }
+
+  expect_op("(");
+  #warning "Parse the function arguments"
+  expect_sym(')');
+
+  function_node->func.args.vector = arguments_vector;
+  if (symresolver_get_symbol_for_native_function(current_process, name_token->sval))
+  {
+    function_node->func.flags |= FUNCTION_NODE_FLAG_IS_NATIVE;
+  }
+
+  if (token_next_is_symbol('{'))
+  {
+    parse_function_body(history_begin(0));
+    struct node* body_node = node_pop();
+    function_node->func.body_n = body_node;
+  }
+  else
+  {
+    expect_sym(';');
+  }
+
+  parser_current_function = NULL;
+  parser_scope_finish();
+}
+
 void parse_struct_no_new_scope(struct datatype* dtype, bool is_forward_declaration)
 {
   struct node* body_node = NULL;
@@ -1075,6 +1119,11 @@ void parse_variable_function_or_struct_union(struct history* history)
 
   // int abc()
   // Check if this is a function declaration
+  if (token_next_is_operator("("))
+  {
+    parse_function(&dtype, name_token, history);
+    return;
+  }
 
   parse_variable(&dtype, name_token, history);
   if (token_is_operator(token_peek_next(), ","))
