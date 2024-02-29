@@ -60,4 +60,9 @@ clean:
 		rm ./test ; \
 	fi;
 
+	if [ -d ./main.dSYM ] ; \
+	then \
+		rm -rf ./main.dSYM ; \
+	fi;
+
 	rm -rf ${OBJECTS}
