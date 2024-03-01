@@ -71,6 +71,16 @@ bool variable_node_is_primitive(struct node* node)
   return datatype_is_primitive(&node->var.type);
 }
 
+bool node_is_expression_or_parentheses(struct node* node)
+{
+  return node->type == NODE_TYPE_EXPRESSION || node->type == NODE_TYPE_EXPRESSION_PARENTHESES;
+}
+
+bool node_is_value_type(struct node* node)
+{
+  return node_is_expression_or_parentheses(node) || node->type == NODE_TYPE_IDENTIFIER || node->type == NODE_TYPE_NUMBER || node->type == NODE_TYPE_UNARY || node->type == NODE_TYPE_TENARY || node->type == NODE_TYPE_STRING;
+}
+
 struct node* node_peek_expressionable_or_null()
 {
   struct node* last_node = node_peek_or_null();
@@ -129,6 +139,11 @@ void make_exp_node(struct node* left_node, struct node* right_node, const char* 
   assert(left_node);
   assert(right_node);
   node_create(&(struct node){.type=NODE_TYPE_EXPRESSION, .exp.left=left_node, .exp.right=right_node, .exp.op=op});
+}
+
+void make_exp_parenthesis_node(struct node* exp_node)
+{
+  node_create(&(struct node){.type=NODE_TYPE_EXPRESSION_PARENTHESES, .parenthesis.exp=exp_node});
 }
 
 void make_bracker_node(struct node* node)
