@@ -1379,6 +1379,24 @@ void parse_for_stmt(struct history* history)
   make_for_node(init_node, cond_node, loop_node, body_node);
 }
 
+void parse_keyword_parentheses_expression(const char* keyword)
+{
+  expect_keyword(keyword);
+  expect_op("(");
+  parse_expressionable_root(history_begin(0));
+  expect_sym(')');
+}
+
+void parse_while(struct history* history)
+{
+  parse_keyword_parentheses_expression("while");
+  struct node* exp_node = node_pop();
+  size_t variable_size = 0;
+  parse_body(&variable_size, history);
+  struct node* body_node = node_pop();
+  make_while_node(exp_node, body_node);
+}
+
 void parse_return(struct history* history)
 {
   expect_keyword("return");
@@ -1420,6 +1438,11 @@ void parse_keyword(struct history* history)
   else if (S_EQ(token->sval, "for"))
   {
     parse_for_stmt(history);
+    return;
+  }
+  else if (S_EQ(token->sval, "while"))
+  {
+    parse_while(history);
     return;
   }
 }
