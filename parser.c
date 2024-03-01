@@ -97,6 +97,7 @@ void parser_datatype_init_type_and_size_for_primitive(struct token* datatype_tok
 void parser_append_size_for_node(struct history* history, size_t* _variable_size, struct node* node);
 void parse_body(size_t* variable_size, struct history* history);
 void parse_keyword(struct history* history);
+void parse_if_stmt(struct history* history);
 
 void parser_scope_new()
 {
@@ -146,6 +147,12 @@ static bool token_next_is_operator(const char* op)
 {
   struct token* token = token_peek_next();
   return token_is_operator(token, op);
+}
+
+static bool token_next_is_keyword(const char* keyword)
+{
+  struct token* token = token_peek_next();
+  return token_is_keyword(token, keyword);
 }
 
 static bool token_next_is_symbol(char c)
@@ -1263,6 +1270,39 @@ void parse_variable_function_or_struct_union(struct history* history)
   expect_sym(';');
 }
 
+struct node* parse_else(struct history* history)
+{
+  size_t var_size = 0;
+  parse_body(&var_size, history);
+  struct node* body_node = node_pop();
+  make_else_node(body_node);
+  return node_pop();
+}
+
+struct node* parse_else_or_else_if(struct history* history)
+{
+  struct node* node = NULL;
+  if (token_next_is_keyword("else"))
+  {
+    // We have an else or an else if
+    // pop off else
+    token_next();
+
+    if (token_next_is_keyword("if"))
+    {
+      // This is an else if not an else
+      parse_if_stmt(history_down(history, 0));
+      node = node_pop();
+      return node;
+    }
+
+    // It is an else statement
+    node = parse_else(history_down(history, 0));
+  }
+
+  return node;
+}
+
 void parse_if_stmt(struct history* history)
 {
   expect_keyword("if");
@@ -1276,7 +1316,7 @@ void parse_if_stmt(struct history* history)
   // if (0) {}
   parse_body(&var_size, history);
   struct node* body_node = node_pop();
-  make_if_node(cond_node, body_node, NULL);
+  make_if_node(cond_node, body_node, parse_else_or_else_if(history));
 }
 
 void parse_keyword(struct history* history)
