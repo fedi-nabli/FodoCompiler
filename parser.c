@@ -93,6 +93,7 @@ struct history* history_down(struct history* history, int flags)
 
 void parse_expressionable(struct history* history);
 int parse_expressionable_single(struct history* history);
+void parse_expressionable_root(struct history* history);
 void parser_datatype_init_type_and_size_for_primitive(struct token* datatype_token, struct token* datatype_secondary_token, struct datatype* datatype_out);
 void parser_append_size_for_node(struct history* history, size_t* _variable_size, struct node* node);
 void parse_body(size_t* variable_size, struct history* history);
