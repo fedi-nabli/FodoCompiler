@@ -584,6 +584,11 @@ struct node
         bool has_default_case;
       } switch_stmt;
 
+      struct case_stmt
+      {
+        struct node* exp;
+      } case_stmt;
+
       struct goto_stmt
       {
         struct node* label;
@@ -691,6 +696,7 @@ void make_for_node(struct node* init_node, struct node* cond_node, struct node* 
 void make_while_node(struct node* exp_node, struct node* body_node);
 void make_do_while_node(struct node* body_node, struct node* exp_node);
 void make_switch_node(struct node* exp_node, struct node* body_node, struct vector* cases, bool has_default_case);
+void make_case_node(struct node* exp_node);
 void make_break_node();
 void make_continue_node();
 void make_goto_node(struct node* label_node);

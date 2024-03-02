@@ -1480,6 +1480,23 @@ void parse_switch(struct history* history)
   parser_end_switch_statement(&_switch);
 }
 
+void parse_case(struct history* history)
+{
+  expect_keyword("case");
+  parse_expressionable_root(history);
+  struct node* case_exp_node = node_pop();
+  expect_sym(':');
+  make_case_node(case_exp_node);
+
+  if (case_exp_node->type != NODE_TYPE_NUMBER)
+  {
+    compiler_error(current_process, "We only support numbers in our subset of C at this time\n");
+  }
+
+  struct node* case_node = node_pop();
+  parser_register_case(history, case_node);
+}
+
 void parse_return(struct history* history)
 {
   expect_keyword("return");
@@ -1570,6 +1587,11 @@ void parse_keyword(struct history* history)
   else if (S_EQ(token->sval, "switch"))
   {
     parse_switch(history);
+    return;
+  }
+  else if (S_EQ(token->sval, "case"))
+  {
+    parse_case(history);
     return;
   }
   else if (S_EQ(token->sval, "goto"))

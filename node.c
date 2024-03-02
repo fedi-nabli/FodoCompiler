@@ -208,6 +208,11 @@ void make_switch_node(struct node* exp_node, struct node* body_node, struct vect
   node_create(&(struct node){.type=NODE_TYPE_STATEMENT_SWITCH, .stmt.switch_stmt.exp_node=exp_node, .stmt.switch_stmt.body_node=body_node, .stmt.switch_stmt.cases=cases, .stmt.switch_stmt.has_default_case=has_default_case});
 }
 
+void make_case_node(struct node* exp_node)
+{
+  node_create(&(struct node){.type=NODE_TYPE_STATEMENT_CASE, .stmt.case_stmt.exp=exp_node});
+}
+
 void make_break_node()
 {
   node_create(&(struct node){.type=NODE_TYPE_STATEMENT_BREAK});
