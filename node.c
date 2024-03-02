@@ -218,6 +218,11 @@ void make_continue_node()
   node_create(&(struct node){.type=NODE_TYPE_STATEMENT_CONTINUE});
 }
 
+void make_label_node(struct node* name_node)
+{
+  node_create(&(struct node){.type=NODE_TYPE_LABEL, .label.name=name_node});
+}
+
 struct node* node_from_sym(struct symbol* sym)
 {
   if (sym->type != SYMBOL_TYPE_NODE)
