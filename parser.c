@@ -62,7 +62,21 @@ enum
   HISTORY_FLAG_IS_UPWARD_STACK = 0b00000010,
   HISTORY_FLAG_IS_GLOBAL_SCOPE = 0b00000100,
   HISTORY_FLAG_INSIDE_STRUCTURE = 0b00001000,
-  HISTORY_FLAG_INSIDE_FUNCTION_BODY = 0b00010000
+  HISTORY_FLAG_INSIDE_FUNCTION_BODY = 0b00010000,
+  HISTORY_FLAG_IN_SWITCH_STATEMENT = 0b00100000
+};
+
+struct history_cases
+{
+  // A vector of parsed_switch_case
+  struct vector* cases;
+  // Is there a default keyword in the switch statement body
+  bool has_default_case;
+};
+
+struct parser_history_switch
+{
+  struct history_cases case_data;
 };
 
 /**
@@ -72,6 +86,7 @@ enum
 struct history
 {
   int flags;
+  struct parser_history_switch _switch;
 };
 
 struct history* history_begin(int flags)
@@ -87,6 +102,19 @@ struct history* history_down(struct history* history, int flags)
   memcpy(new_history, history, sizeof(struct history));
   new_history->flags = flags;
   return new_history;
+}
+
+struct parser_history_switch parser_new_switch_statement(struct history* history)
+{
+  memset(&history->_switch, 0, sizeof(history->_switch));
+  history->_switch.case_data.cases = vector_create(sizeof(struct parsed_switch_case));
+  history->flags |= HISTORY_FLAG_IN_SWITCH_STATEMENT;
+  return history->_switch;
+}
+
+void parser_end_switch_statement(struct parser_history_switch* switch_history)
+{
+  // Do nothing
 }
 
 // > History end
@@ -187,6 +215,15 @@ static void expect_keyword(const char* keyword)
   {
     compiler_error(current_process, "Expecting the keyword %s but something was provided\n", keyword);
   }
+}
+
+void parser_register_case(struct history* history, struct node* case_node)
+{
+  assert(history->flags & HISTORY_FLAG_IN_SWITCH_STATEMENT);
+  struct parsed_switch_case scase;
+  #warning "TO IMPLEMENT: Must be set to the case index"
+  scase.index = 0;
+  vector_push(history->_switch.case_data.cases, &scase);
 }
 
 void parse_single_token_to_node()
@@ -1410,6 +1447,19 @@ void parse_do_while(struct history* history)
   make_do_while_node(body_node, exp_node);
 }
 
+void parse_switch(struct history* history)
+{
+  struct parser_history_switch _switch = parser_new_switch_statement(history);
+  parse_keyword_parentheses_expression("switch");
+  struct node* switch_exp_node = node_pop();
+  size_t variable_size = 0;
+  parse_body(&variable_size, history);
+  struct node* body_node = node_pop();
+  // Create the switch node
+  make_switch_node(switch_exp_node, body_node, _switch.case_data.cases, _switch.case_data.has_default_case);
+  parser_end_switch_statement(&_switch);
+}
+
 void parse_return(struct history* history)
 {
   expect_keyword("return");
@@ -1461,6 +1511,11 @@ void parse_keyword(struct history* history)
   else if (S_EQ(token->sval, "do"))
   {
     parse_do_while(history);
+    return;
+  }
+  else if (S_EQ(token->sval, "switch"))
+  {
+    parse_switch(history);
     return;
   }
 }
