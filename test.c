@@ -1,16 +1,4 @@
 int main(int x)
 {
-  switch (1)
-  {
-    break;
-    goto abc;
-  }
-
-  switch (x)
-  {
-  case 1:
-    break;
-  }
-
-abc:
+  x = 50 ? 30 : 20;
 }

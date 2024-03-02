@@ -470,6 +470,12 @@ struct node
       struct vector* list; 
     } var_list;
 
+    struct node_tenary
+    {
+      struct node* true_node;
+      struct node* false_node;
+    } tenary;
+
     struct bracket
     {
       // int x[50]; [50] would be out bracket node. The inner node would be NODE_TYPE_VARIABLE with a value of 50
@@ -684,6 +690,7 @@ struct node* variable_node_or_list(struct node* node);
 size_t function_node_argument_stack_addition(struct node* node);
 struct node* node_create(struct node* _node);
 void make_exp_node(struct node* left_node, struct node* right_node, const char* op);
+void make_tenary_node(struct node* true_node, struct node* false_node);
 void make_exp_parenthesis_node(struct node* exp_node);
 void make_bracker_node(struct node* node);
 void make_body_node(struct vector* body_vec, size_t size, bool padded, struct node* largest_var_node);
