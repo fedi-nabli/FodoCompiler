@@ -218,6 +218,11 @@ void make_continue_node()
   node_create(&(struct node){.type=NODE_TYPE_STATEMENT_CONTINUE});
 }
 
+void make_goto_node(struct node* label_node)
+{
+  node_create(&(struct node){.type=NODE_TYPE_STATEMENT_GOTO, .stmt.goto_stmt.label=label_node});
+}
+
 void make_label_node(struct node* name_node)
 {
   node_create(&(struct node){.type=NODE_TYPE_LABEL, .label.name=name_node});
