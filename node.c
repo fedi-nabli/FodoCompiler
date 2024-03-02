@@ -198,6 +198,11 @@ void make_while_node(struct node* exp_node, struct node* body_node)
   node_create(&(struct node){.type=NODE_TYPE_STATEMENT_WHILE, .stmt.while_stmt.exp_node=exp_node, .stmt.while_stmt.body_node=body_node});
 }
 
+void make_do_while_node(struct node* body_node, struct node* exp_node)
+{
+  node_create(&(struct node){.type=NODE_TYPE_STATEMENT_DO_WHILE, .stmt.do_while_stmt.exp_node=exp_node, .stmt.do_while_stmt.body_node=body_node});
+}
+
 struct node* node_from_sym(struct symbol* sym)
 {
   if (sym->type != SYMBOL_TYPE_NODE)
