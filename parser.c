@@ -1227,7 +1227,13 @@ void parse_body(size_t* variable_size, struct history* history)
   parse_body_multiple_statements(variable_size, body_vec, history);
   parser_scope_finish();
 
-  #warning "Don't forget to adjust the function stack size"
+  if (variable_size)
+  {
+    if (history->flags & HISTORY_FLAG_INSIDE_FUNCTION_BODY)
+    {
+      parser_current_function->func.stack_size += *variable_size;
+    }
+  }
 }
 
 void token_read_dots(size_t amount)
