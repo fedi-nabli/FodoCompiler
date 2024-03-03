@@ -415,6 +415,28 @@ void parse_for_parentheses(struct history* history)
   parser_deal_with_additional_expression();
 }
 
+void parse_for_array(struct history* history)
+{
+  struct node* left_node = node_peek_or_null();
+  if (left_node)
+  {
+    node_pop();
+  }
+
+  expect_op("[");
+  parse_expressionable_root(history);
+  expect_sym(']');
+
+  struct node* exp_node = node_pop();
+  make_bracker_node(exp_node);
+
+  if (left_node)
+  {
+    struct node* bracket_node = node_pop();
+    make_exp_node(left_node, bracket_node, "[]");
+  }
+}
+
 void parse_for_comma(struct history* history)
 {
   // Skip the comma
@@ -430,6 +452,10 @@ int parse_exp(struct history* history)
   if (S_EQ(token_peek_next()->sval, "("))
   {
     parse_for_parentheses(history);
+  }
+  else if (S_EQ(token_peek_next()->sval, "["))
+  {
+    parse_for_array(history);
   }
   else if (S_EQ(token_peek_next()->sval, "?"))
   {
