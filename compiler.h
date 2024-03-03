@@ -605,6 +605,12 @@ struct node
     {
       struct node* name;
     } label;
+
+    struct cast
+    {
+      struct datatype dtype;
+      struct node* operand;
+    } cast;
   };
 
   union
@@ -708,6 +714,7 @@ void make_break_node();
 void make_continue_node();
 void make_goto_node(struct node* label_node);
 void make_label_node(struct node* name_node);
+void make_cast_node(struct datatype* dtype, struct node* operand_node);
 struct node* node_from_sym(struct symbol* sym);
 struct node* node_from_symbol(struct compile_process* current_process, const char* name);
 struct node* struct_node_for_name(struct compile_process* current_process, const char* name);
