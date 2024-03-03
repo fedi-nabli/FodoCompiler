@@ -72,6 +72,13 @@ enum
   PARSE_GENERAL_ERROR
 };
 
+// Codegen enums
+enum
+{
+  CODEGEN_ALL_OK,
+  CODEGEN_GENERAL_ERROR
+};
+
 // Token types enum
 enum
 {
@@ -650,6 +657,8 @@ void compile_process_push_char(struct lex_process* lex_process, char c);
 int lex(struct lex_process* process);
 // Parse function
 int parse(struct compile_process* process);
+// Codegen funciton
+int codegen(struct compile_process* process);
 
 // Lexer helper functions
 bool keyword_is_datatype(const char* str);
