@@ -1380,6 +1380,12 @@ void parse_struct_or_union(struct datatype* dtype)
   }
 }
 
+void parse_forward_declaration(struct datatype* dtype)
+{
+  // Since this is a forward declaration, parse the structure
+  parse_struct(dtype);
+}
+
 void parse_variable_function_or_struct_union(struct history* history)
 {
   struct datatype dtype;
@@ -1392,6 +1398,12 @@ void parse_variable_function_or_struct_union(struct history* history)
     struct node* su_node = node_pop();
     symresolver_build_for_structure_node(current_process, su_node);
     node_push(su_node);
+    return;
+  }
+
+  if (token_next_is_symbol(';'))
+  {
+    parse_forward_declaration(&dtype);
     return;
   }
 
