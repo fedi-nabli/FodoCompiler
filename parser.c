@@ -1824,6 +1824,11 @@ void parse_keyword(struct history* history)
   compiler_error(current_process, "Invalid keyword provided\n");
 }
 
+void parse_string(struct history* history)
+{
+  parse_single_token_to_node();
+}
+
 int parse_expressionable_single(struct history* history)
 {
   struct token* token = token_peek_next();
@@ -1854,6 +1859,11 @@ int parse_expressionable_single(struct history* history)
 
     case TOKEN_TYPE_KEYWORD:
       parse_keyword(history);
+      res = 0;
+      break;
+
+    case TOKEN_TYPE_STRING:
+      parse_string(history);
       res = 0;
       break;
   }
