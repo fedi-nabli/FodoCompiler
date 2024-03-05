@@ -329,6 +329,9 @@ struct scope
 
 struct code_generator
 {
+  // Vector of struct string_table_element*
+  struct vector* string_table;
+
   // Vector of struct codegen_entry_point*
   struct vector* entry_points;
   // Vector of struct codegen_exit_point*

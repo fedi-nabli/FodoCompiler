@@ -13,4 +13,14 @@ struct codegen_exit_point
   int id;
 };
 
+struct string_table_element
+{
+  // This is the string that the element is related to
+  const char* str;
+
+  // This is the assembly label that points to the memory
+  // where the string can be found
+  const char label[50];
+};
+
 #endif
