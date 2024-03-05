@@ -325,6 +325,18 @@ struct scope
 
 // > Scope structure end
 
+// < Codegen structure start
+
+struct code_generator
+{
+  // Vector of struct codegen_entry_point*
+  struct vector* entry_points;
+  // Vector of struct codegen_exit_point*
+  struct vector* exit_points;
+};
+
+// > Codegen structure end
+
 struct compile_process
 {
   // The flags in regards to how this file should be compiled
@@ -359,6 +371,9 @@ struct compile_process
     // Multiple symbol tables stored in here, struct vector*
     struct vector* tables;
   } symbols;
+
+  // Pointer to our codegenerator
+  struct code_generator* generator;
 };
 
 // < Symbol structure start
@@ -659,6 +674,8 @@ int lex(struct lex_process* process);
 int parse(struct compile_process* process);
 // Codegen funciton
 int codegen(struct compile_process* process);
+// Codegen register function
+struct code_generator* codegenerator_new(struct compile_process* process);
 
 // Lexer helper functions
 bool keyword_is_datatype(const char* str);

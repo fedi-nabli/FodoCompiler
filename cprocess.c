@@ -32,6 +32,7 @@ struct compile_process* compile_process_create(const char* filename, const char*
   process->pos.line = 1;
   process->pos.col = 1;
   process->pos.filename = filename;
+  process->generator = codegenerator_new(process);
 
   symresolver_initialize(process);
   symresolver_new_table(process);
