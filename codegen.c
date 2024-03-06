@@ -1,5 +1,5 @@
-#include "compiler.h"
 #include "codegen.h"
+#include "compiler.h"
 #include "helpers/vector.h"
 
 #include <stdio.h>

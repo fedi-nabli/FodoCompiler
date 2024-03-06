@@ -446,6 +446,16 @@ struct parsed_switch_case
 
 // > Switch cases structure end
 
+// < Stack frame structure start
+
+struct stack_frame
+{
+  // A vector of struct stack_frame_element
+  struct vector* elements;
+};
+
+// > Stack frame structure end
+
 // < Node structure start
 
 struct node
@@ -567,6 +577,8 @@ struct node
 
       // Pointer to the function body node, NULL if this is a function prototype
       struct node* body_n;
+
+      struct stack_frame frame;
 
       // The stack size for all variables inside this function
       size_t stack_size;
