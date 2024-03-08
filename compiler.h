@@ -784,8 +784,8 @@ struct resolver_process
     struct resolver_scope* current;
   } scope;
 
-  struct compile_process* process;
-  struct resolver_callbacks* callbacks;
+  struct compile_process* compiler;
+  struct resolver_callbacks callbacks;
 };
 
 struct resolver_result
