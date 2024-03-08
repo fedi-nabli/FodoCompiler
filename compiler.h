@@ -234,6 +234,66 @@ enum
   ASSOCIATIVITY_RIGHT_TO_LEFT
 };
 
+// < Resolver entity flags enum start
+
+enum
+{
+  RESOLVER_ENTITY_FLAG_IS_STACK = 0b00000001,
+  RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_NEXT_ENTITY = 0b00000010,
+  RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_LEFT_ENTITY = 0b00000100,
+  RESOLVER_ENTITY_FLAG_DO_INDIRECTION = 0b00001000,
+  RESOLVER_ENTITY_FLAG_JUST_USE_OFFSET = 0b00010000,
+  RESOLVER_ENTITY_FLAG_IS_POINTER_ARRAY_ENTITY = 0b00100000,
+  RESOLVER_ENTITY_FLAG_WAS_CASTED = 0b01000000,
+  RESOLVER_ENTITY_FLAG_USES_ARRAY_BRACKETS = 0b10000000
+};
+
+// > Resolver entity flags enum end
+
+// < Resolver entity type enum start
+
+enum
+{
+  RESOLVER_ENTITY_TYPE_NUMBER,
+  RESOLVER_ENTITY_TYPE_FUNCTION,
+  RESOLVER_ENTITY_TYPE_STRUCTURE,
+  RESOLVER_ENTITY_TYPE_FUNCTION_CALL,
+  RESOLVER_ENTITY_TYPE_ARRAY_BRACKET,
+  RESOLVER_ENTITY_TYPE_RULE,
+  RESOLVER_ENTITY_TYPE_GENERAL,
+  RESOLVER_ENTITY_TYPE_UNARY_GET_ADDRESS,
+  RESOLVER_ENTITY_TYPE_UNARY_INDIRECTION,
+  RESOLVER_ENTITY_TYPE_CAST,
+  RESOLVER_ENTITY_TYPE_UNSUPPORTED
+};
+
+// > Resolver entity type enum end
+
+// < Resolver scope flags enum start
+
+enum
+{
+  RESOLVER_SCOPE_FLAG_IS_STACK = 0b00000001
+};
+
+// > Resolver scope flags enum end
+
+// < Resolver result flags enum start
+
+enum
+{
+  RESOLVER_RESULT_FLAG_FAILED = 0b0000001,
+  RESOLVER_RESULT_FLAG_RUNTIME_NEEDED_TO_FINISH_PATH = 0b00000010,
+  RESOLVER_RESULT_FLAG_PROCESSING_ARRAY_ENTITIES = 0b00000100,
+  RESOLVER_RESULT_FLAG_HAS_POINTER_ARRAY_ACCESS = 0b00001000,
+  RESOLVER_RESULT_FLAG_FIRST_ENTITY_LOAD_TO_EBX = 0b00010000,
+  RESOLVER_RESULT_FLAG_FIRST_ENTITY_PUSH_VALUE = 0b00100000,
+  RESOLVER_RESULT_FLAG_FINAL_INDIRECTION_REQUIRED_FOR_VALUE = 0b01000000,
+  RESOLVER_RESULT_FLAG_DOES_GET_ADDRESS = 0b10000000
+};
+
+// > Resolver result flags enum end
+
 struct expressionable_op_precedence_group
 {
   char* operators[MAX_OPERATORS_IN_GROUP];
@@ -669,6 +729,190 @@ struct node
 };
 
 // > Node structure end
+
+// < Resolver function pointers start
+
+struct resolver_scope;
+struct resolver_result;
+struct resolver_entity;
+struct resolver_process;
+
+typedef void* (*RESOLVER_NEW_ARRAY_BRACKET_ENTITY)(struct resolver_result* result, struct node* array_entity_node);
+typedef void* (*RESOLVER_DELETE_SCOPE)(struct resolver_scope* scope);
+typedef void* (*RESOLVER_DELETE_ENTITY)(struct resolver_entity* entity);
+typedef void* (*RESOLVER_MAKE_PRIVATE)(struct resolver_entity* entity, struct node* node, int offset, struct resolver_scope* scope);
+typedef void* (*RESOLVER_SET_RESULT_BASE)(struct resolver_result* result, struct resolver_entity* base_entity);
+typedef struct resolver_entity* (*RESOLVER_MERGE_ENTITIES)(struct resolver_process* process, struct resolver_result* result, struct resolver_entity* left_entity, struct resolver_entity* right_entity);
+
+// > Resolver function pointers end
+
+// < Resolver structures start
+
+struct resolver_array_data
+{
+  // A vector that holds nodes of type resolver_entity
+  struct vector* array_entities;
+};
+
+struct resolver_scope
+{
+  // Resolver scope flags
+  int flags;
+  struct vector* entities;
+  struct resolver_scope* next;
+  struct resolver_scope* prev;
+
+  // Private data for the resolver scope
+  void* private;
+};
+
+struct resolver_callbacks
+{
+  RESOLVER_NEW_ARRAY_BRACKET_ENTITY new_array_entity;
+  RESOLVER_DELETE_SCOPE delete_scope;
+  RESOLVER_DELETE_ENTITY delete_entity;
+  RESOLVER_MAKE_PRIVATE make_private;
+  RESOLVER_SET_RESULT_BASE set_result_base;
+  RESOLVER_MERGE_ENTITIES merge_entities;
+};
+
+struct resolver_process
+{
+  struct resolver_scopes
+  {
+    struct resolver_scope* root;
+    struct resolver_scope* current;
+  } scope;
+
+  struct compile_process* process;
+  struct resolver_callbacks* callbacks;
+};
+
+struct resolver_result
+{
+  // This is the first entity in our resolver result
+  struct resolver_entity* first_entity_const;
+
+  // This entity represents the variable at the start of this expression
+  struct resolver_entity* identifier;
+
+  // Equals to the last structure or union entity discovered
+  struct resolver_entity* last_struct_union_entity;
+
+  struct resolver_array_data array_data;
+
+  // The root entity of our result
+  struct resolver_entity* root_entity;
+
+  // The last entity of our result
+  struct resolver_entity* last_entity;
+
+  int flags;
+  // The total number of entities
+  size_t count;
+
+  struct resolver_result_base
+  {
+    // [ebp-4], [name+4]
+    char address[60];
+    // EBP, global_variable_name
+    char base_address[60];
+    // -4
+    int offset;
+  } base;
+};
+
+struct resolver_entity
+{
+  int type;
+  int flags;
+
+  // The name of the resolved entity
+  // i.e funciton name, variable name ...
+  const char* name;
+
+  // The offset from the stack (EBP+offset)
+  int offset;
+
+  // This is the node that the entity is relating to
+  struct node* node;
+
+  union
+  {
+    struct resolver_entity_var_data
+    {
+      struct datatype dtype;
+      struct resolver_array_runtime_
+      {
+        struct datatype dtype;
+        struct node* index_node;
+        int multiplier;
+      } array_runtime;
+    } var_data;
+
+    struct resolver_entity_array
+    {
+      struct datatype dtype;
+      int multiplier;
+      struct node* array_index_node;
+      int index;
+    } array;
+
+    struct resolver_entity_function_call_data
+    {
+      // A vector of type struct node*
+      struct vector* arguments;
+      // The total bytes used by the function call
+      size_t stack_size;
+    } func_call_data;
+
+    struct resolver_entity_rule
+    {
+      struct resolver_entity_rule_left
+      {
+        int flags;
+      } left;
+
+      struct resolver_entity_rule_right
+      {
+        int flags;
+      } right;
+    } rule;
+
+    struct resolver_entity_indirection
+    {
+      // How much is the depth we need to find the value
+      int depth;
+    } indirection;
+  };
+
+  struct entity_last_resolve
+  {
+    struct node* referencing_node;
+  } last_resolve;
+
+  // The datatype of the resolver entity
+  struct datatype dtype;
+
+  // The scope that this entity belongs to
+  struct resolver_scope* scope;
+
+  // The result of the resolution
+  struct resolver_result* result;
+
+  // The resolver process
+  struct resolver_process* process;
+
+  // Private data that only the resolver entity creator knows about
+  void* private;
+
+  // The next entity
+  struct resolver_entity* next;
+  // The previous entity
+  struct resolver_entity* prev;
+};
+
+// > Resolver strctures end
 
 // Compiler error & warning functions
 void compiler_error(struct compile_process* compiler, const char* msg, ...);
