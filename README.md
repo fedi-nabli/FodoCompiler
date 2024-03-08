@@ -26,8 +26,8 @@ sudo apt-get install gdb
 - The compiler is still in the development stage.
 - The compiler is divided into 6 parts:
   - Lexer: Done
-  - Parser: In Progress
-  - Code generator: Not started
+  - Parser: Done
+  - Code generator: In Progress
   - Preprocessor: Not started
   - Macro system: Not started
   - Semantic validator: Not started
