@@ -18,7 +18,7 @@ sudo apt-get install gcc
 sudo apt-get install gdb
 ```
 
-- To run th project locally, you need `gcc` and `make` installed. It works better on linux. (Disclaimer not tried on arch architecture for new MacBooks).
+- To run th project locally, you need `gcc` and `make` installed. Works better on linux.
 - Step 1: Clone the repository locally `git clone https://github.com/FodoOS/FodoCompiler.git`.
 - Step 2: Run `make` or `make clean` then `make` for clean build.
 - Step 3: Run `./main` and the output should be `'Everything compiled ok'`.
