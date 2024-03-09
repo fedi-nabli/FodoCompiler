@@ -258,3 +258,150 @@ struct resolver_entity* resolver_create_new_entity_for_array_bracket(struct reso
   entity->offset = array_offset(dtype, index, array_index_val);
   return entity;
 }
+
+struct resolver_entity* resolver_create_new_entity_for_merges_array_bracket(struct resolver_result* result, struct resolver_process* process, struct node* node, struct node* array_index_node, int index, struct datatype* dtype, void* private, struct resolver_scope* scope)
+{
+  struct resolver_entity* entity = resolver_create_new_entity(result, RESOLVER_ENTITY_TYPE_ARRAY_BRACKET, private);
+  if (!entity)
+  {
+    return NULL;
+  }
+
+  entity->scope = scope;
+  assert(entity->scope);
+  entity->name = NULL;
+  entity->dtype = *dtype;
+  entity->node = node;
+  entity->array.index = index;
+  entity->array.dtype = *dtype;
+  entity->array.array_index_node = array_index_node;
+
+  return entity;
+}
+
+struct resolver_entity* resolver_create_new_entity_for_unknown_entity(struct resolver_process* process, struct resolver_result* result, struct datatype* dtype, struct resolver_scope* scope, struct node* node, int offset)
+{
+  struct resolver_entity* entity = resolver_create_new_entity(result, RESOLVER_ENTITY_TYPE_GENERAL, NULL);
+  if (!entity)
+  {
+    return NULL;
+  }
+
+  entity->flags = RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_LEFT_ENTITY | RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_NEXT_ENTITY;
+  entity->scope = scope;
+  entity->dtype = *dtype;
+  entity->node = node;
+  entity->offset = offset;
+  
+  return entity;
+}
+
+struct resolver_entity* resolver_create_new_unary_indirection_entity(struct resolver_process* process, struct resolver_result* result, struct node* node, int indirection_depth)
+{
+  struct resolver_entity* entity = resolver_create_new_entity(result, RESOLVER_ENTITY_TYPE_UNARY_INDIRECTION, NULL);
+  if (!entity)
+  {
+    return NULL;
+  }
+
+  entity->flags = RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_LEFT_ENTITY | RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_NEXT_ENTITY;
+  entity->node = node;
+  entity->indirection.depth = indirection_depth;
+
+  return entity;
+}
+
+/**
+ * @brief for getting address i.e &a.b.c
+ * 
+ * @param process 
+ * @param result 
+ * @param dtype 
+ * @param scope 
+ * @param node 
+ * @return struct resolver_entity* the created entity
+ */
+struct resolver_entity* resolver_create_new_unary_get_address_entity(struct resolver_process* process, struct resolver_result* result, struct datatype* dtype, struct resolver_scope* scope, struct node* node)
+{
+  struct resolver_entity* entity = resolver_create_new_entity(result, RESOLVER_ENTITY_TYPE_UNARY_GET_ADDRESS, NULL);
+  if (!entity)
+  {
+    return NULL;
+  }
+
+  entity->flags = RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_LEFT_ENTITY | RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_NEXT_ENTITY;
+  entity->node = node;
+  entity->scope = scope;
+  entity->dtype = *dtype;
+  entity->dtype.flags |= DATATYPE_FLAG_IS_POINTER;
+  entity->dtype.pointer_depth++;
+
+  return entity;
+}
+
+struct resolver_entity* resolver_create_new_cast_entity(struct resolver_process* process, struct resolver_scope* scope, struct datatype* cast_dtype)
+{
+  struct resolver_entity* entity = resolver_create_new_entity(NULL, RESOLVER_ENTITY_TYPE_CAST, NULL);
+  if (!entity)
+  {
+    return NULL;
+  }
+
+  entity->flags = RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_LEFT_ENTITY | RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_NEXT_ENTITY;
+  entity->scope = scope;
+  entity->dtype = *cast_dtype;
+
+  return entity;
+}
+
+struct resolver_entity* resolver_create_new_entity_for_var_node_custom_scope(struct resolver_process* process, struct node* var_node, struct resolver_scope* scope, void* private, int offset)
+{
+  assert(var_node->type == NODE_TYPE_VARIABLE);
+  struct resolver_entity* entity = resolver_create_new_entity(NULL, NODE_TYPE_VARIABLE, private);
+  if (!entity)
+  {
+    return NULL;
+  }
+
+  entity->scope = scope;
+  assert(entity->scope);
+  entity->dtype = var_node->var.type;
+  entity->node = var_node;
+  entity->name = var_node->var.name;
+  entity->offset = offset;
+
+  return entity;
+}
+
+struct resolver_entity* resolver_create_new_entity_for_var_node(struct resolver_process* process, struct node* var_node, void* private, int offset)
+{
+  return resolver_create_new_entity_for_var_node_custom_scope(process, var_node, resolver_scope_current(process), private, offset);
+}
+
+struct resolver_entity* resolver_create_new_entity_for_var_node_no_push(struct resolver_process* process, struct resolver_scope* scope, struct node* var_node, void* private, int offset)
+{
+  struct resolver_entity* entity = resolver_create_new_entity_for_var_node_custom_scope(process, var_node, scope, private, offset);
+  if (!entity)
+  {
+    return NULL;
+  }
+
+  if (scope->flags & RESOLVER_SCOPE_FLAG_IS_STACK)
+  {
+    entity->flags |= RESOLVER_ENTITY_FLAG_IS_STACK;
+  }
+
+  return entity;
+}
+
+struct resolver_entity* resolver_new_entity_for_var_node(struct resolver_process* process, struct node* var_node, void* private, int offset)
+{
+  struct resolver_entity* entity = resolver_create_new_entity_for_var_node_no_push(process, resolver_scope_current(process), var_node, private, offset);
+  if (!entity)
+  {
+    return NULL;
+  }
+
+  vector_push(process->scope.current->entities, &entity);
+  return entity;
+}
