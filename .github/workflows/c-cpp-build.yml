@@ -9,9 +9,16 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+      fail-fast: false
 
     steps:
-    - uses: actions/checkout@v3
-    - name: make
-      run: make
+      - uses: actions/checkout@v4
+      - name: make
+        run: make
