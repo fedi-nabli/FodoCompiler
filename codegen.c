@@ -35,7 +35,7 @@ void asm_push_args(const char* ins, va_list args)
   fprintf(stdout, "\n");
   if (current_process->ofile)
   {
-    vfprintf(current_process->ofile, ins, args);
+    vfprintf(current_process->ofile, ins, args2);
     fprintf(current_process->ofile, "\n");
   }
 }
