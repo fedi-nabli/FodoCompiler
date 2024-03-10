@@ -564,3 +564,86 @@ struct resolver_entity* resolver_get_function(struct resolver_process* resolver,
   entity = resolver_get_function_in_scope(resolver, result, func_name, scope);
   return entity;
 }
+
+struct resolver_entity* resolver_follow_for_name(struct resolver_process* resolver, const char* name, struct resolver_result* result)
+{
+  struct resolver_entity* entity = resolver_entity_clone(resolver_get_entity(resolver, result, name));
+  if (!entity)
+  {
+    return NULL;
+  }
+
+  resolver_result_entity_push(result, entity);
+
+  // The first found identitfier
+  if (!result->identifier)
+  {
+    result->identifier = entity;
+  }
+
+  if (entity->type == RESOLVER_ENTITY_TYPE_VARIABLE && datatype_is_struct_or_union(&entity->var_data.dtype) ||
+      (entity->type == RESOLVER_ENTITY_TYPE_FUNCTION && datatype_is_struct_or_union(&entity->dtype)))
+  {
+    result->last_struct_union_entity = entity;
+  }
+
+  return entity;
+}
+
+struct resolver_entity* resolver_follow_identifier(struct resolver_process* resolver, struct node* node, struct resolver_result* result)
+{
+  struct resolver_entity* entity = resolver_follow_for_name(resolver, node->sval, result);
+  if (entity)
+  {
+    entity->last_resolve.referencing_node = node;
+  }
+
+  return entity;
+}
+
+struct resolver_entity* resolver_follow_part_return_entity(struct resolver_process* resolver, struct node* node, struct resolver_result* result)
+{
+  struct resolver_entity* entity = NULL;
+  switch (node->type)
+  {
+    case NODE_TYPE_IDENTIFIER:
+      entity = resolver_follow_identifier(resolver, node, result);
+      break;
+  }
+}
+
+void resolver_follow_part(struct resolver_process* resolver, struct node* node, struct resolver_result* result)
+{
+  resolver_follow_part_return_entity(resolver, node, result);
+}
+
+void resolver_execute_rules(struct resolver_process* resolver, struct resolver_result* result)
+{
+}
+
+void resolver_merge_compile_times(struct resolver_process* resolver, struct resolver_result* result)
+{
+}
+
+void resolver_finalize_result(struct resolver_process* resolver, struct resolver_result* result)
+{
+}
+
+struct resolver_result* resolver_follow(struct resolver_process* resolver, struct node* node)
+{
+  assert(resolver);
+  assert(node);
+  
+  struct resolver_result* result = resolver_new_result(resolver);
+  resolver_follow_part(resolver, node, result);
+  if (!resolver_result_entity_root(result))
+  {
+    result->flags |= RESOLVER_RESULT_FLAG_FAILED;
+  }
+
+  resolver_execute_rules(resolver, result);
+  resolver_merge_compile_times(resolver, result);
+  resolver_finalize_result(resolver, result);
+
+  return result;
+}
