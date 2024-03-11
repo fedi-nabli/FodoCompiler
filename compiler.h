@@ -994,7 +994,6 @@ bool variable_node_is_primitive(struct node* node);
 bool node_is_expression_or_parentheses(struct node* node);
 bool node_is_value_type(struct node* node);
 bool node_is_expression(struct node* node, const char* op);
-bool is_array_node(struct node* node);
 bool is_assignment_node(struct node* node);
 struct node* node_peek_expressionable_or_null();
 struct node* variable_node(struct node* node);
@@ -1098,6 +1097,13 @@ int compute_sum_padding(struct vector* vec);
 int array_multiplier(struct datatype* dtype, int index, int index_value);
 int array_offset(struct datatype* dtype, int index, int index_value);
 int struct_offset(struct compile_process* compiel_proc, const char* struct_name, const char* var_name, struct node** var_node_out, int last_pos, int flags);
+bool is_access_operator(const char* op);
+bool is_access_node(struct node* node);
+bool is_access_node_with_op(struct node* node, const char* op);
+bool is_array_operator(const char* op);
+bool is_array_node(struct node* node);
+bool is_parentheses_operator(const char* op);
+bool is_parentheses_node(struct node* node);
 
 // > General helper functions end
 
