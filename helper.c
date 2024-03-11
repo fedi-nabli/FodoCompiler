@@ -267,6 +267,11 @@ bool is_indirection_operator(const char* op)
   return S_EQ(op, "*");
 }
 
+bool is_address_operator(const char* op)
+{
+  return S_EQ(op, "&");
+}
+
 void datatype_decrement_pointer(struct datatype* dtype)
 {
   dtype->pointer_depth--;
