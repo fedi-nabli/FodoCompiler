@@ -526,6 +526,27 @@ struct stack_frame
 
 // > Stack frame structure end
 
+// < Unary structure start
+
+struct node;
+struct unary
+{
+  // "*" for pointer accss... *** even for multiple pointer access only the first
+  // operator is here
+  const char* op;
+  struct node* operand;
+  union
+  {
+    struct indirection
+    {
+      // The pointer depth
+      int depth;
+    } indirection;
+  };
+};
+
+// > Unary structure end
+
 // < Node structure start
 
 struct node
@@ -726,6 +747,8 @@ struct node
       struct datatype dtype;
       struct node* operand;
     } cast;
+
+    struct unary unary;
   };
 
   union
@@ -1024,6 +1047,7 @@ void make_continue_node();
 void make_goto_node(struct node* label_node);
 void make_label_node(struct node* name_node);
 void make_cast_node(struct datatype* dtype, struct node* operand_node);
+void make_unary_node(const char* op, struct node* operand_node);
 struct node* node_from_sym(struct symbol* sym);
 struct node* node_from_symbol(struct compile_process* current_process, const char* name);
 struct node* struct_node_for_name(struct compile_process* current_process, const char* name);
@@ -1110,6 +1134,8 @@ bool is_parentheses_operator(const char* op);
 bool is_parentheses_node(struct node* node);
 bool is_argument_operator(const char* op);
 bool is_argument_node(struct node* node);
+bool is_unary_operator(const char* op);
+bool is_indirection_operator(const char* op);
 void datatype_decrement_pointer(struct datatype* dtype);
 
 // > General helper functions end

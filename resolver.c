@@ -9,6 +9,7 @@
 void resolver_follow_part(struct resolver_process* resolver, struct node* node, struct resolver_result* result);
 struct resolver_entity* resolver_follow_exp(struct resolver_process* resolver, struct node* node, struct resolver_result* result);
 struct resolver_result* resolver_follow(struct resolver_process* resolver, struct node* node);
+struct resolver_entity* resolver_follow_array_bracket(struct resolver_process* resolver, struct node* node, struct resolver_result* result);
 
 // > Global functions end
 
