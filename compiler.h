@@ -1055,6 +1055,7 @@ struct array_brackets* array_brackets_new();
 void array_brackets_free(struct array_brackets* brackets);
 void array_brackets_add(struct array_brackets* brackets, struct node* bracket_node);
 struct vector* array_brackets_node_vector(struct array_brackets* brackets);
+size_t array_brackets_count(struct datatype* dtype);
 size_t array_brackets_calculate_size_from_index(struct datatype* dtype, struct array_brackets* brackets, int index);
 size_t array_brackets_calculate_size(struct datatype* dtype, struct array_brackets* brackets);
 int array_total_indexes(struct datatype* dtype);
@@ -1109,6 +1110,7 @@ bool is_parentheses_operator(const char* op);
 bool is_parentheses_node(struct node* node);
 bool is_argument_operator(const char* op);
 bool is_argument_node(struct node* node);
+void datatype_decrement_pointer(struct datatype* dtype);
 
 // > General helper functions end
 

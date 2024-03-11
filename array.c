@@ -26,6 +26,11 @@ struct vector* array_brackets_node_vector(struct array_brackets* brackets)
   return brackets->n_brackets;
 }
 
+size_t array_brackets_count(struct datatype* dtype)
+{
+  return vector_count(dtype->array.brackets->n_brackets);
+}
+
 size_t array_brackets_calculate_size_from_index(struct datatype* dtype, struct array_brackets* brackets, int index)
 {
   struct vector* array_vec = array_brackets_node_vector(brackets);
