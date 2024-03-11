@@ -832,6 +832,19 @@ struct resolver_result
   } base;
 };
 
+struct resolver_entity_rule
+{
+  struct resolver_entity_rule_left
+  {
+    int flags;
+  } left;
+
+  struct resolver_entity_rule_right
+  {
+    int flags;
+  } right;
+};
+
 struct resolver_entity
 {
   int type;
@@ -875,18 +888,7 @@ struct resolver_entity
       size_t stack_size;
     } func_call_data;
 
-    struct resolver_entity_rule
-    {
-      struct resolver_entity_rule_left
-      {
-        int flags;
-      } left;
-
-      struct resolver_entity_rule_right
-      {
-        int flags;
-      } right;
-    } rule;
+    struct resolver_entity_rule rule;
 
     struct resolver_entity_indirection
     {
@@ -995,6 +997,7 @@ bool node_is_expression_or_parentheses(struct node* node);
 bool node_is_value_type(struct node* node);
 bool node_is_expression(struct node* node, const char* op);
 bool is_assignment_node(struct node* node);
+bool node_is_valid(struct node* node);
 struct node* node_peek_expressionable_or_null();
 struct node* variable_node(struct node* node);
 struct node* variable_node_or_list(struct node* node);
@@ -1104,6 +1107,8 @@ bool is_array_operator(const char* op);
 bool is_array_node(struct node* node);
 bool is_parentheses_operator(const char* op);
 bool is_parentheses_node(struct node* node);
+bool is_argument_operator(const char* op);
+bool is_argument_node(struct node* node);
 
 // > General helper functions end
 

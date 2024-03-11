@@ -7,6 +7,8 @@
 // < Global functions start
 
 void resolver_follow_part(struct resolver_process* resolver, struct node* node, struct resolver_result* result);
+struct resolver_entity* resolver_follow_exp(struct resolver_process* resolver, struct node* node, struct resolver_result* result);
+struct resolver_result* resolver_follow(struct resolver_process* resolver, struct node* node);
 
 // > Global functions end
 
@@ -571,6 +573,17 @@ struct resolver_entity* resolver_get_function(struct resolver_process* resolver,
   return entity;
 }
 
+struct datatype* resolver_get_datatype(struct resolver_process* resolver, struct node* node)
+{
+  struct resolver_result* result = resolver_follow(resolver, node);
+  if (!resolver_result_ok(result))
+  {
+    return NULL;
+  }
+
+  return &result->last_entity->dtype;
+}
+
 struct resolver_entity* resolver_follow_for_name(struct resolver_process* resolver, const char* name, struct resolver_result* result)
 {
   struct resolver_entity* entity = resolver_entity_clone(resolver_get_entity(resolver, result, name));
@@ -636,6 +649,74 @@ struct resolver_entity* resolver_follow_struct_exp(struct resolver_process* reso
   return NULL;
 }
 
+struct resolver_entity* resolver_follow_array(struct resolver_process* resolver, struct node* node, struct resolver_result* result)
+{
+  resolver_follow_part(resolver, node->exp.left, result);
+  struct resolver_entity* left_entity = resolver_result_peek(result);
+  resolver_follow_part(resolver, node->exp.right, result);
+  return left_entity;
+}
+
+void resolver_build_function_call_arguments(struct resolver_process* resolver, struct node* argument_node, struct resolver_entity* root_func_cal_entity, size_t* total_size_out)
+{
+  if (is_argument_node(argument_node))
+  {
+    // Build the left node for this function argument
+    resolver_build_function_call_arguments(resolver, argument_node->exp.left, root_func_cal_entity, total_size_out);
+    // Build the right node for this function argument
+    resolver_build_function_call_arguments(resolver, argument_node->exp.right, root_func_cal_entity, total_size_out);
+  }
+  else if (argument_node->type == NODE_TYPE_EXPRESSION_PARENTHESES)
+  {
+    resolver_build_function_call_arguments(resolver, argument_node->parenthesis.exp, root_func_cal_entity, total_size_out);
+  }
+  else if (node_is_valid(argument_node))
+  {
+    vector_push(root_func_cal_entity->func_call_data.arguments, &argument_node);
+    size_t stack_change = DATA_SIZE_DWORD;
+    struct datatype* dtype = resolver_get_datatype(resolver, argument_node);
+    if (dtype)
+    {
+      // 4 bytes unless it's a structure
+      stack_change = datatype_element_size(dtype);
+      if (stack_change < DATA_SIZE_DWORD)
+      {
+        stack_change = DATA_SIZE_DWORD;
+      }
+
+      stack_change = align_value(stack_change, DATA_SIZE_DWORD);
+    }
+
+    *total_size_out += stack_change;
+  }
+}
+
+struct resolver_entity* resolver_follow_function_call(struct resolver_process* resolver, struct node* node, struct resolver_result* result)
+{
+  resolver_follow_part(resolver, node->exp.left, result);
+  struct resolver_entity* left_entity = resolver_result_peek(result);
+
+  struct resolver_entity* func_call_entity = resolver_create_new_entity_for_function_call(resolver, result, left_entity, NULL);
+  assert(func_call_entity);
+  func_call_entity->flags |= RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_LEFT_ENTITY | RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_NEXT_ENTITY;
+  
+  resolver_build_function_call_arguments(resolver, node->exp.right, func_call_entity, &func_call_entity->func_call_data.stack_size);
+
+  // Push the function call entity to the stack
+  resolver_result_entity_push(result, func_call_entity);
+  return func_call_entity;
+}
+
+struct resolver_entity* resolver_follow_parentheses(struct resolver_process* resolver, struct node* node, struct resolver_result* result)
+{
+  if (node->exp.left->type == NODE_TYPE_IDENTIFIER)
+  {
+    return resolver_follow_function_call(resolver, node, result);
+  }
+
+  return resolver_follow_exp(resolver, node, result);
+}
+
 struct resolver_entity* resolver_follow_exp(struct resolver_process* resolver, struct node* node, struct resolver_result* result)
 {
   struct resolver_entity* entity = NULL;
@@ -643,6 +724,16 @@ struct resolver_entity* resolver_follow_exp(struct resolver_process* resolver, s
   {
     entity = resolver_follow_struct_exp(resolver, node, result);
   }
+  else if (is_array_node(node))
+  {
+    entity = resolver_follow_array(resolver, node, result);
+  }
+  else if (is_parentheses_node(node))
+  {
+    entity = resolver_follow_parentheses(resolver, node, result);
+  }
+
+  return entity;
 }
 
 struct resolver_entity* resolver_follow_part_return_entity(struct resolver_process* resolver, struct node* node, struct resolver_result* result)

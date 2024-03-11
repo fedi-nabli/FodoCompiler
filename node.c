@@ -101,6 +101,11 @@ bool is_assignment_node(struct node* node)
          S_EQ(node->exp.op, "/=");
 }
 
+bool node_is_valid(struct node* node)
+{
+  return node && node->type != NODE_TYPE_BLANK;
+}
+
 struct node* node_peek_expressionable_or_null()
 {
   struct node* last_node = node_peek_or_null();
