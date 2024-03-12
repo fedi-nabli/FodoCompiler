@@ -304,6 +304,36 @@ enum
 
 // > Resolver result flags enum end
 
+// < Resolver default entity type enum start
+
+enum
+{
+  RESOLVER_DEFAULT_ENTITY_TYPE_STACK,
+  RESOLVER_DEFAULT_ENTITY_TYPE_SYMBOL
+};
+
+// > Resolver default entity type enum end
+
+// < Resolver default datatype enum start
+
+enum
+{
+  RESOLVER_DEFAULT_ENTITY_DATA_TYPE_VARIABLE,
+  RESOLVER_DEFAULT_ENTITY_DATA_TYPE_FUNCTION,
+  RESOLVER_DEFAULT_ENTITY_DATA_TYPE_ARRAY_BRACKET
+};
+
+// > Resolver default datatype enum end
+
+// < Resolver default flags enum start
+
+enum
+{
+  RESOLVER_DEFAULT_ENTITY_FLAG_IS_LOCAL_STACK = 0b00000001
+};
+
+// > Resolver default flags enum end
+
 struct expressionable_op_precedence_group
 {
   char* operators[MAX_OPERATORS_IN_GROUP];
@@ -771,10 +801,10 @@ struct resolver_entity;
 struct resolver_process;
 
 typedef void* (*RESOLVER_NEW_ARRAY_BRACKET_ENTITY)(struct resolver_result* result, struct node* array_entity_node);
-typedef void* (*RESOLVER_DELETE_SCOPE)(struct resolver_scope* scope);
-typedef void* (*RESOLVER_DELETE_ENTITY)(struct resolver_entity* entity);
+typedef void (*RESOLVER_DELETE_SCOPE)(struct resolver_scope* scope);
+typedef void (*RESOLVER_DELETE_ENTITY)(struct resolver_entity* entity);
 typedef void* (*RESOLVER_MAKE_PRIVATE)(struct resolver_entity* entity, struct node* node, int offset, struct resolver_scope* scope);
-typedef void* (*RESOLVER_SET_RESULT_BASE)(struct resolver_result* result, struct resolver_entity* base_entity);
+typedef void (*RESOLVER_SET_RESULT_BASE)(struct resolver_result* result, struct resolver_entity* base_entity);
 typedef struct resolver_entity* (*RESOLVER_MERGE_ENTITIES)(struct resolver_process* process, struct resolver_result* result, struct resolver_entity* left_entity, struct resolver_entity* right_entity);
 
 // > Resolver function pointers end
@@ -948,6 +978,29 @@ struct resolver_entity
 
 // > Resolver strctures end
 
+// < Resolver default structres start
+
+struct resolver_default_scope_data
+{
+  int flags;
+};
+
+struct resolver_default_entity_data
+{
+  // i.e variable, function, structure
+  int type;
+  // This is the address: [ebp-4], [var_name+4]
+  char address[60];
+  // ebp, var_name
+  char base_address[60];
+  // -4
+  int offset;
+  // Flags relating to the entity data
+  int flags;
+};
+
+// > Resolver default structures end
+
 // Compiler error & warning functions
 void compiler_error(struct compile_process* compiler, const char* msg, ...);
 void compiler_warning(struct compile_process* compiler, const char* msg, ...);
@@ -1097,6 +1150,17 @@ void symresolver_build_for_structure_node(struct compile_process* process, struc
 struct symbol* symresolver_get_symbol_for_native_function(struct compile_process* process, const char* name);
 
 // > Symbol resolver helper functions end
+
+// < Resolver helper functions start
+
+struct resolver_scope* resolver_new_scope(struct resolver_process* resolver, void* private, int flags);
+void resolver_finish_scope(struct resolver_process* resolver);
+struct resolver_process* resolver_new_process(struct compile_process* compiler, struct resolver_callbacks* callbacks);
+struct resolver_entity* resolver_new_entity_for_var_node(struct resolver_process* process, struct node* var_node, void* private, int offset);
+struct resolver_entity* resolver_make_entity(struct resolver_process* process, struct resolver_result* result, struct datatype* custom_dtype, struct node* node, struct resolver_entity* guided_entity, struct resolver_scope* scope);
+struct resolver_entity* resolver_register_function(struct resolver_process* process, struct node* func_node, void* private);
+
+// > Resolver helper functions end
 
 // < General helper functions start
 
