@@ -50,6 +50,11 @@
   case ')':         \
   case ']'
 
+// Codegen definitions
+#define STACK_PUSH_SIZE 4
+#define C_STACK_ALIGNMENT 16
+#define C_ALIGN(size) (size % C_STACK_ALIGNMENT) ? size + (C_STACK_ALIGNMENT - (size % C_STACK_ALIGNMENT)) : size
+
 // Lexer case defintions end
 
 enum
@@ -334,6 +339,17 @@ enum
 
 // > Resolver default flags enum end
 
+// < Codegen enums start
+
+enum
+{
+  IS_ALONE_STATEMENT = 0b00000001
+};
+
+// > Codegen enums end
+
+// < Expressionable definitions start
+
 struct expressionable_op_precedence_group
 {
   char* operators[MAX_OPERATORS_IN_GROUP];
@@ -477,6 +493,7 @@ struct compile_process
 
   // Pointer to our codegenerator
   struct code_generator* generator;
+  struct resolver_process* resolver;
 };
 
 // < Symbol structure start
@@ -1075,10 +1092,13 @@ bool node_is_value_type(struct node* node);
 bool node_is_expression(struct node* node, const char* op);
 bool is_assignment_node(struct node* node);
 bool node_is_valid(struct node* node);
+bool function_node_is_prototype(struct node* node);
 struct node* node_peek_expressionable_or_null();
 struct node* variable_node(struct node* node);
 struct node* variable_node_or_list(struct node* node);
 size_t function_node_argument_stack_addition(struct node* node);
+size_t function_node_stack_size(struct node* node);
+struct vector* function_node_argument_vec(struct node* node);
 struct node* node_create(struct node* _node);
 void make_exp_node(struct node* left_node, struct node* right_node, const char* op);
 void make_tenary_node(struct node* true_node, struct node* false_node);
@@ -1161,6 +1181,31 @@ struct resolver_entity* resolver_make_entity(struct resolver_process* process, s
 struct resolver_entity* resolver_register_function(struct resolver_process* process, struct node* func_node, void* private);
 
 // > Resolver helper functions end
+
+// < Resolver default helper functions start
+
+struct resolver_default_entity_data* resolver_default_entity_private(struct resolver_entity* entity);
+struct resolver_default_scope_data* resolver_default_scope_private(struct resolver_scope* scope);
+char* resolver_default_stack_asm_address(int stack_offset, char* out);
+void resolver_default_global_asm_address(const char* name, int offset, char* address_out);
+void resolver_default_entity_data_set_address(struct resolver_default_entity_data* entity_data, struct node* var_node, int offset, int flags);
+struct resolver_default_entity_data* resolver_default_new_entity_data();
+void* resolver_default_make_private(struct resolver_entity* entity, struct node* node, int offset, struct resolver_scope* scope);
+void resolver_default_set_result_base(struct resolver_result* result, struct resolver_entity* base_entity);
+struct resolver_default_entity_data* resolver_default_new_entity_data_for_var_node(struct node* var_node, int offset, int flags);
+struct resolver_default_entity_data* resolver_default_new_entity_data_for_array_bracket(struct node* bracket_node);
+struct resolver_default_entity_data* resolver_default_new_entity_data_for_function(struct node* func_node, int flags);
+struct resolver_entity* resolver_default_new_scope_entity(struct resolver_process* resolver, struct node* var_node, int offset, int flags);
+struct resolver_entity* resolver_default_register_function(struct resolver_process* resolver, struct node* func_node, int flags);
+void resolver_default_new_scope(struct resolver_process* resolver, int flags);
+void resolver_default_finish_scope(struct resolver_process* resolver);
+void* resolver_default_new_array_entity(struct resolver_result* result, struct node* array_entity_node);
+void resolver_default_delete_entity(struct resolver_entity* entity);
+void resolver_default_delete_scope(struct resolver_scope* scope);
+struct resolver_entity* resolver_default_merge_entities(struct resolver_process* resolver, struct resolver_result* result, struct resolver_entity* left_entity, struct resolver_entity* right_entity);
+struct resolver_process* resolver_default_new_process(struct compile_process* compiler);
+
+// > Resolver default helper functions end
 
 // < General helper functions start
 

@@ -106,6 +106,11 @@ bool node_is_valid(struct node* node)
   return node && node->type != NODE_TYPE_BLANK;
 }
 
+bool function_node_is_prototype(struct node* node)
+{
+  return node->func.body_n == NULL;
+}
+
 struct node* node_peek_expressionable_or_null()
 {
   struct node* last_node = node_peek_or_null();
@@ -147,6 +152,18 @@ size_t function_node_argument_stack_addition(struct node* node)
 {
   assert(node->type == NODE_TYPE_FUNCTION);
   return node->func.args.stack_addition;
+}
+
+size_t function_node_stack_size(struct node* node)
+{
+  assert(node->type == NODE_TYPE_FUNCTION);
+  return node->func.stack_size;
+}
+
+struct vector* function_node_argument_vec(struct node* node)
+{
+  assert(node->type == NODE_TYPE_FUNCTION);
+  return node->func.args.vector;
 }
 
 struct node* node_create(struct node* _node)

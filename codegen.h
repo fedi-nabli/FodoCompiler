@@ -23,7 +23,7 @@ enum
 {
   STACK_FRAME_ELEMENT_TYPE_LOCAL_VARIABLE,
   STACK_FRAME_ELEMENT_TYPE_SAVED_REGISTER,
-  STACK_FRAME_ELEMENT_TYPE_SAVED_BP,
+  STACK_FRAME_ELEMENT_TYPE_SAVED_EBP,
   STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE,
   STACK_FRAME_ELEMENT_TYPE_UNKNOWN
 };
@@ -84,7 +84,7 @@ void stackframe_push(struct node* func_node, struct stack_frame_element* element
 void stackframe_pop(struct node* func_node);
 void stackframe_pop_expecting(struct node* func_node, int expecting_type, const char* expecting_name);
 void stackframe_sub(struct node* func_node, int type, const char* name, size_t amount);
-void stackframe_add(struct node* func_node, size_t amount);
+void stackframe_add(struct node* func_node, int type, const char* name, size_t amount);
 void stackframe_assert_empty(struct node* func_node);
 
 // > Stackframe function helpers end
