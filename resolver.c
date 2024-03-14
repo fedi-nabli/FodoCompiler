@@ -34,7 +34,7 @@ struct resolver_entity* resolver_result_entity_root(struct resolver_result* resu
   return result->root_entity;
 }
 
-struct resolver_entity* resolver_entity_next(struct resolver_entity* entity)
+struct resolver_entity* resolver_result_entity_next(struct resolver_entity* entity)
 {
   return entity->next;
 }

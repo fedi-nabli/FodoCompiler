@@ -1205,12 +1205,16 @@ struct symbol* symresolver_get_symbol_for_native_function(struct compile_process
 
 // < Resolver helper functions start
 
+bool resolver_result_ok(struct resolver_result* result);
+struct resolver_entity* resolver_result_entity_root(struct resolver_result* result);
+struct resolver_entity* resolver_result_entity_next(struct resolver_entity* entity);
 struct resolver_scope* resolver_new_scope(struct resolver_process* resolver, void* private, int flags);
 void resolver_finish_scope(struct resolver_process* resolver);
 struct resolver_process* resolver_new_process(struct compile_process* compiler, struct resolver_callbacks* callbacks);
 struct resolver_entity* resolver_new_entity_for_var_node(struct resolver_process* process, struct node* var_node, void* private, int offset);
 struct resolver_entity* resolver_make_entity(struct resolver_process* process, struct resolver_result* result, struct datatype* custom_dtype, struct node* node, struct resolver_entity* guided_entity, struct resolver_scope* scope);
 struct resolver_entity* resolver_register_function(struct resolver_process* process, struct node* func_node, void* private);
+struct resolver_result* resolver_follow(struct resolver_process* resolver, struct node* node);
 
 // > Resolver helper functions end
 
