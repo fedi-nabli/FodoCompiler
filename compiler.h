@@ -1255,6 +1255,7 @@ struct symbol* symresolver_get_symbol_for_native_function(struct compile_process
 bool resolver_result_ok(struct resolver_result* result);
 struct resolver_entity* resolver_result_entity_root(struct resolver_result* result);
 struct resolver_entity* resolver_result_entity_next(struct resolver_entity* entity);
+struct resolver_entity* resolver_result_entity(struct resolver_result* result);
 struct resolver_scope* resolver_new_scope(struct resolver_process* resolver, void* private, int flags);
 void resolver_finish_scope(struct resolver_process* resolver);
 struct resolver_process* resolver_new_process(struct compile_process* compiler, struct resolver_callbacks* callbacks);
