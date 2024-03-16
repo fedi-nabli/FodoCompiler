@@ -1174,7 +1174,7 @@ struct node* node_create(struct node* _node);
 void make_exp_node(struct node* left_node, struct node* right_node, const char* op);
 void make_tenary_node(struct node* true_node, struct node* false_node);
 void make_exp_parenthesis_node(struct node* exp_node);
-void make_bracker_node(struct node* node);
+void make_bracket_node(struct node* node);
 void make_body_node(struct vector* body_vec, size_t size, bool padded, struct node* largest_var_node);
 void make_struct_node(const char* name, struct node* body_node);
 void make_union_node(const char* name, struct node* body_node);
@@ -1237,7 +1237,7 @@ void symresolver_initialize(struct compile_process* process);
 void symresolver_new_table(struct compile_process* process);
 void symresolver_end_table(struct compile_process* process);
 struct symbol* symresolver_get_symbol(struct compile_process* process, const char* name);
-void symresolver_build_for_structure_node(struct compile_process* process, struct node* node);
+void symresolver_build_for_node(struct compile_process* process, struct node* node);
 struct symbol* symresolver_get_symbol_for_native_function(struct compile_process* process, const char* name);
 
 // > Symbol resolver helper functions end

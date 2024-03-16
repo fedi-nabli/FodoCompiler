@@ -193,7 +193,7 @@ void make_tenary_node(struct node* true_node, struct node* false_node)
   node_create(&(struct node){.type=NODE_TYPE_TENARY, .tenary.true_node=true_node, .tenary.false_node=false_node});
 }
 
-void make_bracker_node(struct node* node)
+void make_bracket_node(struct node* node)
 {
   node_create(&(struct node){.type=NODE_TYPE_BRACKET, .bracket.inner=node});
 }
