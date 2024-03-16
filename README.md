@@ -16,6 +16,8 @@ For more information about the progress and stages check the 'Overview' section.
 sudo apt-get install make
 sudo apt-get install gcc
 sudo apt-get install gdb
+sudo apt-get install gcc-multilib
+sudo apt-get install g++-multilib
 ```
 
 - To run th project locally, you need `gcc` and `make` installed. Works better on linux.
