@@ -280,3 +280,32 @@ void datatype_decrement_pointer(struct datatype* dtype)
     dtype->flags &= ~DATATYPE_FLAG_IS_POINTER;
   }
 }
+
+struct datatype* datatype_thats_a_pointer(struct datatype* d1, struct datatype* d2)
+{
+  if (d1->flags & DATATYPE_FLAG_IS_POINTER)
+  {
+    return d1;
+  }
+
+  if (d2->flags & DATATYPE_FLAG_IS_POINTER)
+  {
+    return d2;
+  }
+
+  return NULL;
+}
+
+struct datatype* datatype_pointer_reduce(struct datatype* datatype, int by)
+{
+  struct datatype* new_datatye = calloc(1, sizeof(struct datatype));
+  memcpy(new_datatye, datatype, sizeof(struct datatype));
+  new_datatye->pointer_depth -= by;
+  if (new_datatye->pointer_depth <= 0)
+  {
+    new_datatye->flags &= ~DATATYPE_FLAG_IS_POINTER;
+    new_datatye->pointer_depth = 0;
+  }
+
+  return new_datatye;
+}
