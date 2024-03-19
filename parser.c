@@ -1042,6 +1042,7 @@ void make_variable_node_and_register(struct history* history, struct datatype* d
   // Push the variable node to the scope
   parser_scope_push(parser_new_scope_entity(var_node, var_node->var.aoffset, 0), var_node->var.type.size);
 
+  resolver_default_new_scope_entity(current_process->resolver, var_node, var_node->var.aoffset, 0);
   node_push(var_node);
 }
 
@@ -1111,6 +1112,7 @@ void parse_function(struct datatype* ret_type, struct token* name_token, struct 
 {
   struct vector* arguments_vector = NULL;
   parser_scope_new();
+  resolver_default_new_scope(current_process->resolver, 0);
   make_function_node(ret_type, name_token->sval, NULL, NULL);
   struct node* function_node = node_peek();
   parser_current_function = function_node;
@@ -1141,6 +1143,7 @@ void parse_function(struct datatype* ret_type, struct token* name_token, struct 
   }
 
   parser_current_function = NULL;
+  resolver_default_finish_scope(current_process->resolver);
   parser_scope_finish();
 }
 
@@ -1345,6 +1348,7 @@ void parse_body_multiple_statements(size_t* variable_size, struct vector* body_v
 void parse_body(size_t *variable_size, struct history* history)
 {
   parser_scope_new();
+  resolver_default_new_scope(current_process->resolver, 0);
   size_t tmp_size = 0x00;
   if (!variable_size)
   {
@@ -1355,12 +1359,14 @@ void parse_body(size_t *variable_size, struct history* history)
   if (!token_next_is_symbol('{'))
   {
     parse_body_single_statement(variable_size, body_vec, history);
+    resolver_default_finish_scope(current_process->resolver);
     parser_scope_finish();
     return;
   }
 
   // We have some statements between curly braces { int a; int b; int c; }
   parse_body_multiple_statements(variable_size, body_vec, history);
+  resolver_default_finish_scope(current_process->resolver);
   parser_scope_finish();
 
   if (variable_size)
@@ -1448,11 +1454,13 @@ void parse_union(struct datatype* dtype)
   if (!is_forward_declaration)
   {
     parser_scope_new();
+    resolver_default_new_scope(current_process->resolver, 0);
   }
   parse_union_no_scope(dtype, is_forward_declaration);
 
   if (!is_forward_declaration)
   {
+    resolver_default_finish_scope(current_process->resolver);
     parser_scope_finish();
   }
 }
@@ -1463,11 +1471,13 @@ void parse_struct(struct datatype* dtype)
   if (!is_forward_declaration)
   {
     parser_scope_new();
+    resolver_default_new_scope(current_process->resolver, 0);
   }
   parse_struct_no_new_scope(dtype, is_forward_declaration);
 
   if (!is_forward_declaration)
   {
+    resolver_default_finish_scope(current_process->resolver);
     parser_scope_finish();
   }
 }
@@ -1968,8 +1978,18 @@ void parse_expressionable(struct history* history)
 
 void parse_keyword_for_global()
 {
-  parse_keyword(history_begin(0));
+  parse_keyword(history_begin(HISTORY_FLAG_IS_GLOBAL_SCOPE));
   struct node* node = node_pop();
+
+  switch (node->type)
+  {
+    case NODE_TYPE_VARIABLE:
+    case NODE_TYPE_FUNCTION:
+    case NODE_TYPE_STRUCT:
+    case NODE_TYPE_UNION:
+      symresolver_build_for_node(current_process, node);
+      break;
+  }
 
   node_push(node);
 }
