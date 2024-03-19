@@ -415,7 +415,7 @@ enum
   EXPRESSION_IS_ADDITION | EXPRESSION_IS_MODULAS | EXPRESSION_IS_SUBSTRACTION | EXPRESSION_IS_MULTIPLICATION | \
   EXPRESSION_IS_DIVISION | EXPRESSION_IS_ABOVE | EXPRESSION_IS_ABOVE_OR_EQUAL | \
   EXPRESSION_IS_BELOW | EXPRESSION_IS_BELOW_OR_EQUAL | EXPRESSION_IS_EQUAL | EXPRESSION_IS_NOT_EQUAL | \
-  EXPRESSION_LOGICAL_AND | EXPRESSION_LOGICAL_OR | EXPRESSION_IN_LOGICAL_EXPRESSION | \
+  EXPRESSION_LOGICAL_AND | EXPRESSION_LOGICAL_OR | \
   EXPRESSION_IS_BITSHIFT_LEFT | EXPRESSION_IS_BITSHIFT_RIGHT | \
   EXPRESSION_IS_BITWISE_AND | EXPRESSION_IS_BITWISE_OR | EXPRESSION_IS_BITWISE_XOR | \
   EXPRESSION_IS_ASSIGNMENT | IS_ALONE_STATEMENT \
@@ -1331,6 +1331,8 @@ bool is_argument_node(struct node* node);
 bool is_unary_operator(const char* op);
 bool is_indirection_operator(const char* op);
 bool is_address_operator(const char* op);
+bool is_logical_operator(const char* op);
+bool is_logical_node(struct node* node);
 void datatype_decrement_pointer(struct datatype* dtype);
 struct datatype* datatype_thats_a_pointer(struct datatype* d1, struct datatype* d2);
 struct datatype* datatype_pointer_reduce(struct datatype* datatype, int by);
