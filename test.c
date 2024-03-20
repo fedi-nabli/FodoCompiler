@@ -4,12 +4,11 @@ struct dog
   int b;
   int e;
   char kk;
-} ii;
-
-struct dog a;
+};
 
 int main()
 {
-  int e;
-  a.kk = 10;
+  struct dog a;
+  struct dog b;
+  a = b;
 }
