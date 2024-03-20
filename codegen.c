@@ -9,6 +9,8 @@
 static struct compile_process* current_process = NULL;
 static struct node* current_function = NULL;
 
+#define STRUCTURE_PUSH_START_POSITION_ONE 1
+
 // < Codegen history start
 
 struct history_exp
@@ -127,6 +129,8 @@ void codegen_generate_exp_node(struct node* node, struct history* history);
 void codegen_generate_entity_access_for_function_call(struct resolver_result* result, struct resolver_entity* entity);
 void codegen_generate_structure_push(struct resolver_entity* entity, struct history* histroy, int start_pos);
 void codegen_plus_or_minus_string_for_value(char* out, int val, size_t len);
+void codegen_generate_expressionable(struct node* node, struct history* history);
+bool codegen_resolve_node_for_value(struct node* node, struct history* history);
 
 // > Codegen global functions end
 
@@ -653,8 +657,11 @@ void codegen_generate_structure_push_or_return(struct resolver_entity* entity, s
 
 void codegen_gen_mem_access(struct node* node, int flags, struct resolver_entity* entity)
 {
-  #warning "Generate & address"
-  #warning "Generate structure non pointer access"
+  if (flags & EXPRESSION_GET_ADDRESS)
+  {
+    codegen_gen_mem_access_get_address(node, flags, entity);
+    return;
+  }
 
   if (datatype_is_struct_or_union_non_pointer(&entity->dtype))
   {
@@ -695,6 +702,35 @@ void codegen_generate_identifier(struct node* node, struct history* history)
   codegen_response_acknowledge(&(struct response){.flags=RESPONSE_FLAG_RESOLVED_ENTITY, .data.resolved_entity=entity});
 }
 
+void codegen_generate_unary_address(struct node* node, struct history* history)
+{
+  int flags = history->flags;
+  codegen_generate_expressionable(node->unary.operand, history_down(history, flags | EXPRESSION_GET_ADDRESS));
+  codegen_response_acknowledge(&(struct response){.flags=RESPONSE_FLAG_UNARY_GET_ADDRESS});
+}
+
+void codegen_generate_unary(struct node* node, struct history* history)
+{
+  int flags = history->flags;
+  if (codegen_resolve_node_for_value(node, history))
+  {
+    return;
+  }
+
+  if (is_indirection_operator(node->unary.op))
+  {
+    #warning "Implement pointer unary later on"
+    return;
+  }
+  else if (is_address_operator(node->unary.op))
+  {
+    codegen_generate_unary_address(node, history);
+    return;
+  }
+
+  #warning "Generate normal unary"
+}
+
 void codegen_generate_expressionable(struct node* node, struct history* history)
 {
   bool is_root = codegen_is_exp_root(history);
@@ -715,6 +751,10 @@ void codegen_generate_expressionable(struct node* node, struct history* history)
 
     case NODE_TYPE_EXPRESSION:
       codegen_generate_exp_node(node, history);
+      break;
+
+    case NODE_TYPE_UNARY:
+      codegen_generate_unary(node, history);
       break;
   }
 }
