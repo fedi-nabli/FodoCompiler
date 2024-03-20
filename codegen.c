@@ -1055,6 +1055,11 @@ void codegen_generate_entity_access_for_unary_indirection_for_assignment_left_op
   asm_push_ins_push_with_flags("ebx", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value", STACK_FRAME_ELEMENT_FLAG_IS_PUSHED_ADDRESS);
 }
 
+void codegen_generate_entity_access_for_unsupported(struct resolver_result* result, struct resolver_entity* entity)
+{
+  codegen_generate_expressionable(entity->node, history_begin(0));
+}
+
 void codegen_generate_entity_access_for_entity_for_assignment_left_operand(struct resolver_result* result, struct resolver_entity* entity, struct history* history)
 {
   switch (entity->type)
@@ -1081,7 +1086,7 @@ void codegen_generate_entity_access_for_entity_for_assignment_left_operand(struc
       break;
 
     case RESOLVER_ENTITY_TYPE_UNSUPPORTED:
-      #warning "TODO: Implement unsupporte entities"
+      codegen_generate_entity_access_for_unsupported(result, entity);
       break;
 
     case RESOLVER_ENTITY_TYPE_CAST:
@@ -1249,7 +1254,7 @@ void codegen_generate_entity_access_for_entity(struct resolver_result* result, s
       break;
 
     case RESOLVER_ENTITY_TYPE_UNSUPPORTED:
-      #warning "TODO: Implement unsupported entities"
+      codegen_generate_entity_access_for_unsupported(result, entity);
       break;
 
     case RESOLVER_ENTITY_TYPE_CAST:
