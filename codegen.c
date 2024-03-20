@@ -1162,7 +1162,23 @@ bool codegen_resolve_node_for_value(struct node* node, struct history* history)
     return false;
   }
 
-  #warning "MORE TO GO FOR RESOLVING NODE VALUE"
+  struct datatype dtype;
+  assert(asm_datatype_back(&dtype));
+  if (datatype_is_struct_or_union_non_pointer(&dtype))
+  {
+    codegen_generate_structure_push(result->last_entity, history, 0);
+  }
+  else if (!(dtype.flags & DATATYPE_FLAG_IS_POINTER))
+  {
+    asm_push_ins_pop("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
+    if (result->flags & RESOLVER_RESULT_FLAG_FINAL_INDIRECTION_REQUIRED_FOR_VALUE)
+    {
+      asm_push("mov eax, [eax]");
+    }
+
+    codegen_reduce_register("eax", datatype_element_size(&dtype), dtype.flags & DATATYPE_FLAG_IS_SIGNED);
+    asm_push_ins_push_with_data("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value", 0, &(struct stack_frame_data){.dtype=dtype});
+  }
 
   return true;
 }
