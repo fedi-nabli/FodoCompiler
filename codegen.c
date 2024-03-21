@@ -2030,6 +2030,11 @@ void codegen_generate_switch_statement(struct node* node)
   codegen_end_entry_exit_point();
 }
 
+void codegen_generate_label(struct node* node)
+{
+  asm_push("label_%s:", node->label.name->sval);
+}
+
 void codegen_generate_goto_statement(struct node* node)
 {
   asm_push("jmp label_%s", node->stmt.goto_stmt.label->sval); 
@@ -2089,6 +2094,10 @@ void codegen_generate_statement(struct node* node, struct history* history)
 
     case NODE_TYPE_STATEMENT_DEFAULT:
       codegen_generate_switch_default_statementt(node);
+      break;
+
+    case NODE_TYPE_LABEL:
+      codegen_generate_label(node);
       break;
 
     case NODE_TYPE_STATEMENT_GOTO:
