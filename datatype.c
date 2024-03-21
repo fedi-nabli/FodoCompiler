@@ -75,3 +75,14 @@ struct datatype datatype_for_numeric()
   dtype.size = DATA_SIZE_DWORD;
   return dtype;
 }
+
+struct datatype datatype_for_string()
+{
+  struct datatype dtype = {};
+  dtype.type = DATA_TYPE_INTEGER;
+  dtype.type_str = "char";
+  dtype.flags |= DATATYPE_FLAG_IS_POINTER | DATATYPE_FLAG_IS_LITERAL;
+  dtype.pointer_depth = 1;
+  dtype.size = DATA_SIZE_DWORD;
+  return dtype;
+}

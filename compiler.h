@@ -1165,6 +1165,7 @@ size_t datatype_size_for_array_access(struct datatype* dtype);
 size_t datatype_element_size(struct datatype* dtype);
 size_t datatype_size_no_ptr(struct datatype* dtype);
 struct datatype datatype_for_numeric();
+struct datatype datatype_for_string();
 
 // < Node functions start
 
