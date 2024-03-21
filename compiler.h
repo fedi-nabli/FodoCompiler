@@ -520,6 +520,17 @@ struct scope
 
 struct code_generator
 {
+  struct generator_switch_stmt
+  {
+    struct generator_switch_stmt_entity
+    {
+      int id;
+    } current;
+
+    // Vector of generator_switch_stmt_entity
+    struct vector* switches;
+  } _switch;
+
   // Vector of struct string_table_element*
   struct vector* string_table;
 
