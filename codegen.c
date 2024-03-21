@@ -1871,6 +1871,7 @@ void codegen_generate_do_while_statement(struct node* node)
 
 void codegen_generate_for_statement(struct node* node)
 {
+  #warning "For stmt continue doesn't take into account the increment"
   struct for_stmt* for_stmt = &node->stmt.for_stmt;
   codegen_begin_entry_exit_point();
   int for_loop_start_id = codegen_label_count();
@@ -1913,6 +1914,11 @@ void codegen_generate_break_statement(struct node* node)
   codegen_goto_exit_point(node);
 }
 
+void codegen_generate_continue_statement(struct node* node)
+{
+  codegen_goto_entry_point(node);
+}
+
 void codegen_generate_statement(struct node* node, struct history* history)
 {
   switch (node->type)
@@ -1951,6 +1957,10 @@ void codegen_generate_statement(struct node* node, struct history* history)
 
     case NODE_TYPE_STATEMENT_BREAK:
       codegen_generate_break_statement(node);
+      break;
+
+    case NODE_TYPE_STATEMENT_CONTINUE:
+      codegen_generate_continue_statement(node);
       break;
   }
 
