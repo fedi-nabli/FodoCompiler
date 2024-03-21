@@ -137,6 +137,7 @@ bool codegen_response_has_entity(struct response* res)
 // < Codegen global functions start
 
 const char* codegen_sub_register(const char* original_reg, size_t size);
+void codegen_generate_body(struct node* node, struct history* history);
 void codegen_generate_exp_node(struct node* node, struct history* history);
 void codegen_generate_entity_access_for_function_call(struct resolver_result* result, struct resolver_entity* entity);
 void codegen_generate_structure_push(struct resolver_entity* entity, struct history* histroy, int start_pos);
@@ -144,6 +145,7 @@ void codegen_plus_or_minus_string_for_value(char* out, int val, size_t len);
 void codegen_generate_expressionable(struct node* node, struct history* history);
 bool codegen_resolve_node_for_value(struct node* node, struct history* history);
 void codegen_generate_entity_access_for_unary_get_address(struct resolver_result* result, struct resolver_entity* entity);
+void _codegen_generate_if_statement(struct node* node, int end_label_id);
 
 // > Codegen global functions end
 
@@ -1773,6 +1775,51 @@ void codegen_generate_statement_return(struct node* node)
   asm_push("ret");
 }
 
+void codegen_generate_else_statement(struct node* node)
+{
+  codegen_generate_body(node->stmt.else_stmt.body_node, history_begin(0));
+}
+
+void codegen_generate_else_or_else_if_statement(struct node* node, int end_label_id)
+{
+  if (node->type == NODE_TYPE_STATEMENT_IF)
+  {
+    _codegen_generate_if_statement(node, end_label_id);
+  }
+  else if (node->type == NODE_TYPE_STATEMENT_ELSE)
+  {
+    codegen_generate_else_statement(node);
+  }
+  else
+  {
+    compiler_error(current_process, "Unexpected keywork, compiler bug...");
+  }
+}
+
+void _codegen_generate_if_statement(struct node* node, int end_label_id)
+{
+  int if_label_id = codegen_label_count();
+  codegen_generate_expressionable(node->stmt.if_stmt.cond_node, history_begin(0));
+  asm_push_ins_pop("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
+  asm_push("cmp eax, 0");
+  asm_push("je .if_%i", if_label_id);
+  codegen_generate_body(node->stmt.if_stmt.body_node, history_begin(IS_ALONE_STATEMENT));
+  asm_push("jmp .if_end_%i", end_label_id);
+  asm_push(".if_%i:", if_label_id);
+
+  if (node->stmt.if_stmt.next)
+  {
+    codegen_generate_else_or_else_if_statement(node->stmt.if_stmt.next, end_label_id);
+  }
+}
+
+void codegen_generate_if_statement(struct node* node)
+{
+  int end_label_id = codegen_label_count();
+  _codegen_generate_if_statement(node, end_label_id);
+  asm_push(".if_end_%i:", end_label_id);
+}
+
 void codegen_generate_statement(struct node* node, struct history* history)
 {
   switch (node->type)
@@ -1787,6 +1834,10 @@ void codegen_generate_statement(struct node* node, struct history* history)
 
     case NODE_TYPE_VARIABLE:
       codegen_generate_scope_variable(node);
+      break;
+
+    case NODE_TYPE_STATEMENT_IF:
+      codegen_generate_if_statement(node);
       break;
 
     case NODE_TYPE_STATEMENT_RETURN:
