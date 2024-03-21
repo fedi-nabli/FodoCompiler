@@ -343,6 +343,19 @@ void codegen_stack_add(size_t stack_size)
   codegen_stack_add_with_name(stack_size, "literal_stack_change");
 }
 
+void codegen_stack_add_no_compile_time_stack_frame_resptore(size_t stack_size)
+{
+  if (stack_size != 0)
+  {
+    asm_push("ass esp, %lld", stack_size);
+  }
+}
+
+void asm_pop_ebp_no_stack_frame_restore()
+{
+  asm_push("pop ebp");
+}
+
 struct code_generator* codegenerator_new(struct compile_process* process)
 {
   struct code_generator* generator = calloc(1, sizeof(struct code_generator));
@@ -1731,6 +1744,35 @@ void codegen_generate_structure_push(struct resolver_entity* entity, struct hist
   codegen_response_acknowledge(RESPONSE_SET(.flags=RESPONSE_FLAG_PUSHED_STRUCTURE));
 }
 
+void codegen_generate_statement_return_exp(struct node* node)
+{
+  codegen_response_expect();
+  codegen_generate_expressionable(node->stmt.return_stmt.exp, history_begin(IS_STATMENT_RETURN));
+  struct datatype dtype;
+  assert(asm_datatype_back(&dtype));
+  if (datatype_is_struct_or_union_non_pointer(&dtype))
+  {
+    asm_push("mov edx, [ebp+8]");
+    codegen_generate_move_struct(&dtype, "edx", 0);
+    asm_push("mov eax, [ebp+8]");
+    return;
+  }
+
+  asm_push_ins_pop("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
+}
+
+void codegen_generate_statement_return(struct node* node)
+{
+  if (node->stmt.return_stmt.exp)
+  {
+    codegen_generate_statement_return_exp(node);
+  }
+
+  codegen_stack_add_no_compile_time_stack_frame_resptore(C_ALIGN(function_node_stack_size(node->binded.function)));
+  asm_pop_ebp_no_stack_frame_restore();
+  asm_push("ret");
+}
+
 void codegen_generate_statement(struct node* node, struct history* history)
 {
   switch (node->type)
@@ -1739,8 +1781,16 @@ void codegen_generate_statement(struct node* node, struct history* history)
       codegen_generate_exp_node(node, history_begin(history->flags));
       break;
     
+    case NODE_TYPE_UNARY:
+      codegen_generate_unary(node, history);
+      break;
+
     case NODE_TYPE_VARIABLE:
       codegen_generate_scope_variable(node);
+      break;
+
+    case NODE_TYPE_STATEMENT_RETURN:
+      codegen_generate_statement_return(node);
       break;
   }
 
