@@ -293,6 +293,26 @@ int asm_push_ins_pop(const char* fmt, int expecting_stack_entity_type, const cha
   return flags;
 }
 
+int asm_push_ins_pop_or_ignore(const char* fmt, int expecting_stack_entity_type, const char* expecting_stack_entity_name, ...)
+{
+  if (!stackframe_back_expect(current_function, expecting_stack_entity_type, expecting_stack_entity_name))
+  {
+    return STACK_FRAME_ELEMENT_FLAG_ELEMENT_NOT_FOUND;
+  }
+
+  char tmp_buf[200];
+  sprintf(tmp_buf, "pop %s", fmt);
+  va_list args;
+  va_start(args, expecting_stack_entity_name);
+  asm_push_args(tmp_buf, args);
+  va_end(args);
+
+  struct stack_frame_element* element = stackframe_back(current_function);
+  int flags = element->flags;
+  stackframe_pop_expecting(current_function, expecting_stack_entity_type, expecting_stack_entity_name);
+  return flags;
+}
+
 void asm_push_ins_push_with_data(const char* fmt, int stack_entity_type, const char* stack_entity_name, int flags, struct stack_frame_data* data, ...)
 {
   char tmp_buf[200];
@@ -1849,6 +1869,45 @@ void codegen_generate_do_while_statement(struct node* node)
   codegen_end_entry_exit_point();
 }
 
+void codegen_generate_for_statement(struct node* node)
+{
+  struct for_stmt* for_stmt = &node->stmt.for_stmt;
+  codegen_begin_entry_exit_point();
+  int for_loop_start_id = codegen_label_count();
+  int for_loop_end_id = codegen_label_count();
+
+  if (for_stmt->init_node)
+  {
+    codegen_generate_expressionable(for_stmt->init_node, history_begin(0));
+    asm_push_ins_pop_or_ignore("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
+  }
+
+  asm_push(".for_loop_%i:", for_loop_start_id);
+  if (for_stmt->cond_node)
+  {
+    codegen_generate_expressionable(for_stmt->cond_node, history_begin(0));
+    asm_push_ins_pop_or_ignore("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
+    asm_push("cmp eax, 0");
+    asm_push("je .for_loop_end_%i", for_loop_end_id);
+  }
+
+  if (for_stmt->body_node)
+  {
+    codegen_generate_body(for_stmt->body_node, history_begin(IS_ALONE_STATEMENT));
+  }
+
+  if (for_stmt->loop_node)
+  {
+    codegen_generate_expressionable(for_stmt->loop_node, history_begin(0));
+    asm_push_ins_pop_or_ignore("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
+  }
+
+  asm_push("jmp .for_loop_%i", for_loop_start_id);
+  asm_push(".for_loop_end_%i:", for_loop_end_id);
+
+  codegen_end_entry_exit_point();
+}
+
 void codegen_generate_statement(struct node* node, struct history* history)
 {
   switch (node->type)
@@ -1879,6 +1938,10 @@ void codegen_generate_statement(struct node* node, struct history* history)
 
     case NODE_TYPE_STATEMENT_DO_WHILE:
       codegen_generate_do_while_statement(node);
+      break;
+
+    case NODE_TYPE_STATEMENT_FOR:
+      codegen_generate_for_statement(node);
       break;
   }
 
