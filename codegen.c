@@ -1871,15 +1871,21 @@ void codegen_generate_do_while_statement(struct node* node)
 
 void codegen_generate_for_statement(struct node* node)
 {
-  #warning "For stmt continue doesn't take into account the increment"
   struct for_stmt* for_stmt = &node->stmt.for_stmt;
-  codegen_begin_entry_exit_point();
   int for_loop_start_id = codegen_label_count();
   int for_loop_end_id = codegen_label_count();
 
   if (for_stmt->init_node)
   {
     codegen_generate_expressionable(for_stmt->init_node, history_begin(0));
+    asm_push_ins_pop_or_ignore("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
+  }
+
+  asm_push("jmp .for_loop_%i", for_loop_start_id);
+  codegen_begin_entry_exit_point();
+  if (for_stmt->loop_node)
+  {
+    codegen_generate_expressionable(for_stmt->loop_node, history_begin(0));
     asm_push_ins_pop_or_ignore("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
   }
 
