@@ -1,9 +1,15 @@
 int main()
 {
-  int x = 0;
-  for (x = 0; x < 50; x += 1)
+  int x = 1;
+  switch (x)
   {
-    continue;
+    case 1:
+      x = 90;
+      break;
+
+    case 2:
+      x = 100;
+      break;
   }
 
   return x;

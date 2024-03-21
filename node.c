@@ -271,6 +271,11 @@ void make_case_node(struct node* exp_node)
   node_create(&(struct node){.type=NODE_TYPE_STATEMENT_CASE, .stmt.case_stmt.exp=exp_node});
 }
 
+void make_default_node()
+{
+  node_create(&(struct node){.type=NODE_TYPE_STATEMENT_DEFAULT});
+}
+
 void make_break_node()
 {
   node_create(&(struct node){.type=NODE_TYPE_STATEMENT_BREAK});
