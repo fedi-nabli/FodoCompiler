@@ -1,15 +1,10 @@
 int main()
 {
-  if (5)
+  int x = 0;
+  while (x < 50)
   {
-    int x = 20;
+    x += 1;
   }
-  else if (6)
-  {
-    int c = 8;
-  }
-  else
-  {
-    int y = 80;
-  }
+
+  return x;
 }
