@@ -282,6 +282,18 @@ bool is_logical_node(struct node* node)
   return node->type == NODE_TYPE_EXPRESSION && is_logical_operator(node->exp.op);
 }
 
+bool is_parentheses(const char* op)
+{
+  return S_EQ(op, "(");
+}
+
+bool unary_operand_compatible(struct token* token)
+{
+  return is_access_operator(token->sval) ||
+         is_array_operator(token->sval) ||
+         is_parentheses(token->sval);
+}
+
 void datatype_decrement_pointer(struct datatype* dtype)
 {
   dtype->pointer_depth--;

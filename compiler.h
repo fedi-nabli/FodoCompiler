@@ -1346,6 +1346,8 @@ bool is_indirection_operator(const char* op);
 bool is_address_operator(const char* op);
 bool is_logical_operator(const char* op);
 bool is_logical_node(struct node* node);
+bool is_parentheses(const char* op);
+bool unary_operand_compatible(struct token* token);
 void datatype_decrement_pointer(struct datatype* dtype);
 struct datatype* datatype_thats_a_pointer(struct datatype* d1, struct datatype* d2);
 struct datatype* datatype_pointer_reduce(struct datatype* datatype, int by);
