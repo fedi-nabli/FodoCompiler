@@ -98,7 +98,9 @@ bool is_assignment_node(struct node* node)
          S_EQ(node->exp.op, "+=") ||
          S_EQ(node->exp.op, "-=") ||
          S_EQ(node->exp.op, "*=") ||
-         S_EQ(node->exp.op, "/=");
+         S_EQ(node->exp.op, "/=") ||
+         S_EQ(node->exp.op, ">>=") ||
+         S_EQ(node->exp.op, "<<=");
 }
 
 bool node_is_valid(struct node* node)
