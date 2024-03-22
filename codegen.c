@@ -928,6 +928,18 @@ void codegen_generate_tenary(struct node* node, struct history* history)
   asm_push(".tenary_end_%i:", tenary_end_label_id);
 }
 
+void codegen_generate_cast(struct node* node, struct history* history)
+{
+  if (!codegen_resolve_node_for_value(node, history))
+  {
+    codegen_generate_expressionable(node->cast.operand, history);
+  }
+
+  asm_push_ins_pop("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
+  codegen_reduce_register("eax", datatype_size(&node->cast.dtype), node->cast.dtype.flags & DATATYPE_FLAG_IS_SIGNED);
+  asm_push_ins_push_with_data("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value", 0, &(struct stack_frame_data){.dtype=node->cast.dtype});
+}
+
 void codegen_generate_expressionable(struct node* node, struct history* history)
 {
   bool is_root = codegen_is_exp_root(history);
@@ -964,6 +976,10 @@ void codegen_generate_expressionable(struct node* node, struct history* history)
 
     case NODE_TYPE_TENARY:
       codegen_generate_tenary(node, history);
+      break;
+
+    case NODE_TYPE_CAST:
+      codegen_generate_cast(node, history);
       break;
   }
 }
@@ -1200,6 +1216,11 @@ void codegen_generate_entity_access_for_unsupported(struct resolver_result* resu
   codegen_generate_expressionable(entity->node, history_begin(0));
 }
 
+void codegen_generate_entity_access_for_cast(struct resolver_result* result, struct resolver_entity* entity)
+{
+  asm_push("; CAST");
+}
+
 void codegen_generate_entity_access_for_entity_for_assignment_left_operand(struct resolver_result* result, struct resolver_entity* entity, struct history* history)
 {
   switch (entity->type)
@@ -1230,7 +1251,7 @@ void codegen_generate_entity_access_for_entity_for_assignment_left_operand(struc
       break;
 
     case RESOLVER_ENTITY_TYPE_CAST:
-      #warning "TODO: Implement cast"
+      codegen_generate_entity_access_for_cast(result, entity);
       break;
 
     default:
@@ -1398,7 +1419,7 @@ void codegen_generate_entity_access_for_entity(struct resolver_result* result, s
       break;
 
     case RESOLVER_ENTITY_TYPE_CAST:
-      #warning "TODO: Implement cast"
+      codegen_generate_entity_access_for_cast(result, entity);
       break;
 
     default:
