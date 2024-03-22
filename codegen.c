@@ -633,7 +633,19 @@ void codegen_generate_global_variable_for_struct(struct node* node)
 {
   if (node->var.val != NULL)
   {
-    compiler_error(current_process, "");
+    compiler_error(current_process, "We don't yet support values for structures");
+    return;
+  }
+
+  char tmp_buf[256];
+  asm_push("%s: %s 0", node->var.name, asm_keyword_for_size(variable_size(node), tmp_buf));
+}
+
+void codegen_generate_global_variable_for_union(struct node* node)
+{
+  if (node->var.val != NULL)
+  {
+    compiler_error(current_process, "We don't yet support values for unions");
     return;
   }
 
@@ -658,6 +670,10 @@ void codegen_generate_global_variable(struct node* node)
       codegen_generate_global_variable_for_struct(node);
       break;
 
+    case DATA_TYPE_UNION:
+      codegen_generate_global_variable_for_union(node);
+      break;
+
     case DATA_TYPE_FLOAT:
     case DATA_TYPE_DOUBLE:
       compiler_error(current_process, "Doubles and floats are not supported in our subset of C\n");
@@ -670,6 +686,14 @@ void codegen_generate_struct(struct node* node)
   if (node->flags & NODE_FLAG_HAS_VARIABLE_COMBINED)
   {
     codegen_generate_global_variable(node->_struct.var);
+  }
+}
+
+void codegen_generate_union(struct node* node)
+{
+  if (node->flags & NODE_FLAG_HAS_VARIABLE_COMBINED)
+  {
+    codegen_generate_global_variable(node->_union.var);
   }
 }
 
