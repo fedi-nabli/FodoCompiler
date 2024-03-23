@@ -259,7 +259,14 @@ bool is_unary_operator(const char* op)
          S_EQ(op, "!") ||
          S_EQ(op, "~") ||
          S_EQ(op, "*") ||
-         S_EQ(op, "&");
+         S_EQ(op, "&") ||
+         S_EQ(op, "++") ||
+         S_EQ(op, "--");
+}
+
+bool is_left_operand_unary_operator(const char* op)
+{
+  return S_EQ(op, "++") || S_EQ(op, "--");
 }
 
 bool is_indirection_operator(const char* op)

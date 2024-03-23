@@ -397,7 +397,7 @@ void parse_for_indirection_unary()
   int depth = parser_get_pointer_depth();
   parse_expressionable(history_begin(EXPRESSION_IS_UNARY));
   struct node* unary_operand_node = node_pop();
-  make_unary_node("*", unary_operand_node);
+  make_unary_node("*", unary_operand_node, 0);
 
   struct node* unary_node = node_pop();
   unary_node->unary.indirection.depth = depth;
@@ -409,7 +409,7 @@ void parse_for_normal_unary()
   const char* unary_op = token_next()->sval;
   parse_expressionable(history_begin(EXPRESSION_IS_UNARY));
   struct node* unary_operand_node = node_pop();
-  make_unary_node(unary_op, unary_operand_node);
+  make_unary_node(unary_op, unary_operand_node, 0);
 }
 
 void parse_for_unary()
@@ -423,6 +423,11 @@ void parse_for_unary()
 
   parse_for_normal_unary();
   parser_deal_with_additional_expression();
+}
+
+void parse_for_left_operand_unary(struct node* left_operand_node, const char* unary_op)
+{
+  make_unary_node(unary_op, left_operand_node, UNARY_FLAG_IS_LEFT_OPERAND_UNARY);
 }
 
 void parse_exp_normal(struct history* history)
@@ -446,6 +451,12 @@ void parse_exp_normal(struct history* history)
 
   // Pop off the left node
   node_pop();
+  if (is_left_operand_unary_operator(op))
+  {
+    parse_for_left_operand_unary(node_left, op);
+    return;
+  }
+
   node_left->flags |= NODE_FLAG_INSIDE_EXPRESSION;
 
   if (token_peek_next()->type == TOKEN_TYPE_OPERATOR)

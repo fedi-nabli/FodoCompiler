@@ -162,6 +162,12 @@ enum
   NODE_FLAG_HAS_VARIABLE_COMBINED = 0b00000100
 };
 
+// unary flags
+enum
+{
+  UNARY_FLAG_IS_LEFT_OPERAND_UNARY = 0b00000001
+};
+
 // < Expressionable definitions start
 
 // < Datatype flags enum start
@@ -667,6 +673,7 @@ struct stack_frame
 struct node;
 struct unary
 {
+  int flags;
   // "*" for pointer accss... *** even for multiple pointer access only the first
   // operator is here
   const char* op;
@@ -1213,7 +1220,7 @@ void make_continue_node();
 void make_goto_node(struct node* label_node);
 void make_label_node(struct node* name_node);
 void make_cast_node(struct datatype* dtype, struct node* operand_node);
-void make_unary_node(const char* op, struct node* operand_node);
+void make_unary_node(const char* op, struct node* operand_node, int flags);
 struct node* node_from_sym(struct symbol* sym);
 struct node* node_from_symbol(struct compile_process* current_process, const char* name);
 struct node* struct_node_for_name(struct compile_process* current_process, const char* name);
@@ -1342,6 +1349,7 @@ bool is_parentheses_node(struct node* node);
 bool is_argument_operator(const char* op);
 bool is_argument_node(struct node* node);
 bool is_unary_operator(const char* op);
+bool is_left_operand_unary_operator(const char* op);
 bool is_indirection_operator(const char* op);
 bool is_address_operator(const char* op);
 bool is_logical_operator(const char* op);
