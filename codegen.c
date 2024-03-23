@@ -339,6 +339,15 @@ void asm_pop_ebp()
   asm_push_ins_pop("ebp", STACK_FRAME_ELEMENT_TYPE_SAVED_BP, "function_entry_saved_ebp");
 }
 
+void codegen_data_section_add(const char* data, ...)
+{
+  va_list args;
+  va_start(args, data);
+  char* new_data = malloc(256);
+  vsprintf(new_data, data, args);
+  vector_push(current_process->generator->custom_data_section, &new_data);
+}
+
 void codegen_stack_sub_with_name(size_t stack_size, const char* name)
 {
   if (stack_size != 0)
@@ -386,6 +395,7 @@ struct code_generator* codegenerator_new(struct compile_process* process)
   generator->string_table = vector_create(sizeof(struct string_table_element*));
   generator->entry_points = vector_create(sizeof(struct codegen_entry_point*));
   generator->exit_points = vector_create(sizeof(struct codegen_exit_point*));
+  generator->custom_data_section = vector_create(sizeof(const char*));
   generator->responses = vector_create(sizeof(struct response*));
   generator->_switch.switches = vector_create(sizeof(struct generator_switch_stmt_entity));
   return generator;
@@ -1521,8 +1531,10 @@ void codegen_generate_entity_access_for_function_call(struct resolver_result* re
   vector_set_peek_pointer_end(entity->func_call_data.arguments);
 
   struct node* node = vector_peek_ptr(entity->func_call_data.arguments);
+  int function_call_label_id = codegen_label_count();
+  codegen_data_section_add("function_call_%i: dd 0", function_call_label_id);
   asm_push_ins_pop("ebx", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
-  asm_push("mov ecx, ebx");
+  asm_push("mov dword [function_call_%i], ebx", function_call_label_id);
   if (datatype_is_struct_or_union_non_pointer(&entity->dtype))
   {
     asm_push("; SUBSTRACT ROOM FOR RETURNED STRUCTURE/UNION DATATYPE");
@@ -1536,7 +1548,7 @@ void codegen_generate_entity_access_for_function_call(struct resolver_result* re
     node = vector_peek_ptr(entity->func_call_data.arguments);
   }
 
-  asm_push("call ecx");
+  asm_push("call [function_call_%i]", function_call_label_id);
   size_t stack_size = entity->func_call_data.stack_size;
   if (datatype_is_struct_or_union_non_pointer(&entity->dtype))
   {
@@ -2490,6 +2502,18 @@ void codegen_generate_root()
   }
 }
 
+void codegen_generate_data_section_add_ons()
+{
+  asm_push("section .data");
+  vector_set_peek_pointer(current_process->generator->custom_data_section, 0);
+  const char* str = vector_peek_ptr(current_process->generator->custom_data_section);
+  while (str)
+  {
+    asm_push(str);
+    str = vector_peek_ptr(current_process->generator->custom_data_section);
+  }
+}
+
 bool codegen_write_string_char_escaped(char c)
 {
   const char* c_out = NULL;
@@ -2560,6 +2584,8 @@ int codegen(struct compile_process* process)
   vector_set_peek_pointer(process->node_tree_vec, 0);
   codegen_generate_root();
   codegen_finish_scope();
+
+  codegen_generate_data_section_add_ons();
 
   // Generate read only data
   codegen_generate_rod();

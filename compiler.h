@@ -545,6 +545,9 @@ struct code_generator
   // Vector of struct codegen_exit_point*
   struct vector* exit_points;
 
+  // Vector of const char* that will go in the data section
+  struct vector* custom_data_section;
+
   // Vector of struct response*
   struct vector* responses;
 };
