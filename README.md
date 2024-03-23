@@ -30,7 +30,7 @@ sudo apt-get install g++-multilib
 - The compiler is divided into 6 parts:
   - Lexer: Done
   - Parser: Done
-  - Code generator: In Progress
+  - Code generator: Done
   - Preprocessor: Not started
   - Macro system: Not started
   - Semantic validator: Not started
