@@ -1,12 +1,19 @@
 int printf(const char* s, ...);
 
+struct dog
+{
+  int a;
+  int b;
+};
+
+void set_dog(struct dog* d, int x)
+{
+  d->b = x;
+}
+
 int main()
 {
-  int x;
-  x = 0;
-  int y;
-  int s;
-  y = --x;
-  s = y++;
-  printf("%i\n%i\n", y, s);
+  struct dog d;
+  set_dog(&d, 70);
+  printf("Hello world: %i\n", d.b);
 }
