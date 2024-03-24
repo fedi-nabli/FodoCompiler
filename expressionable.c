@@ -171,11 +171,11 @@ int expressionable_parse_token(struct expressionable* expressionable, struct tok
       res = expressionable_parse_number(expressionable);
       break;
 
-    case NODE_TYPE_IDENTIFIER:
+    case TOKEN_TYPE_IDENTIFIER:
       res = expressionable_parse_identifier(expressionable);
       break;
 
-    case NODE_TYPE_EXPRESSION:
+    case TOKEN_TYPE_OPERATOR:
       res = expressionable_parse_exp(expressionable, token);
       break;
   }
