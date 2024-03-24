@@ -114,6 +114,11 @@ enum
   NUMBER_TYPE_DOUBLE
 };
 
+enum
+{
+  TOKEN_FLAG_IS_CUSTOM_OPERATOR = 0b00000001
+};
+
 // Node types enum start
 
 enum
