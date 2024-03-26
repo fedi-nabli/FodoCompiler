@@ -109,6 +109,106 @@ int expressionable_parse_identifier(struct expressionable* expressionable)
   return 0;
 }
 
+int expressionable_parser_get_precedence_for_operator(const char* op, struct expressionable_op_precedence_group** group_out)
+{
+  *group_out = NULL;
+  for (int i = 0; i < TOTAL_OPERATOR_GROUPS; i++)
+  {
+    for (int b = 0; op_precedence[i].operators[b]; b++)
+    {
+      const char* _op = op_precedence[i].operators[b];
+      if (S_EQ(op, _op))
+      {
+        *group_out = &op_precedence[i];
+        return i;
+      }
+    }
+  }
+
+  return -1;
+}
+
+bool expressionable_parser_left_op_has_priority(const char* op_left, const char* op_right)
+{
+  struct expressionable_op_precedence_group* group_left = NULL;
+  struct expressionable_op_precedence_group* group_right = NULL;
+
+  if (S_EQ(op_left, op_right))
+  {
+    return false;
+  }
+
+  int precedence_left = expressionable_parser_get_precedence_for_operator(op_left, &group_left);
+  int precedence_right = expressionable_parser_get_precedence_for_operator(op_right, &group_right);
+  if (group_left->associativity == ASSOCIATIVITY_RIGHT_TO_LEFT)
+  {
+    return false;
+  }
+
+  return precedence_left >= precedence_right;
+}
+
+void expressionable_parser_node_shift_children_left(struct expressionable* expressionable, void* node)
+{
+  int node_type = expressionable_callbacks(expressionable)->get_node_type(expressionable, node);
+  assert(node_type == EXPRESSIONABLE_GENERIC_TYPE_EXPRESSION);
+
+  void* left_node = expressionable_callbacks(expressionable)->get_left_node(expressionable, node);
+  void* right_node = expressionable_callbacks(expressionable)->get_right_node(expressionable, node);
+  int right_node_type = expressionable_callbacks(expressionable)->get_node_type(expressionable, right_node);
+  assert(right_node_type == EXPRESSIONABLE_GENERIC_TYPE_EXPRESSION);
+
+  const char* right_op = expressionable_callbacks(expressionable)->get_node_operator(expressionable, right_node);
+  void* new_exp_left_node = left_node;
+  void* new_exp_right_node = expressionable_callbacks(expressionable)->get_left_node(expressionable, right_node);
+  const char* node_op = expressionable_callbacks(expressionable)->get_node_operator(expressionable, node);
+  expressionable_callbacks(expressionable)->make_expression_node(expressionable, new_exp_left_node, new_exp_right_node, node_op);
+
+  void* new_left_operand = expressionable_node_pop(expressionable);
+  void* new_right_operand = expressionable_callbacks(expressionable)->get_right_node(expressionable, right_node);
+  expressionable_callbacks(expressionable)->set_expression_node(expressionable, node, new_left_operand, new_right_operand, right_op);
+}
+
+void expressionable_parser_reorder_expression(struct expressionable* expressionable, void** node_out)
+{
+  void* node = *node_out;
+  int node_type = expressionable_callbacks(expressionable)->get_node_type(expressionable, node);
+
+  if (node_type != EXPRESSIONABLE_GENERIC_TYPE_EXPRESSION)
+  {
+    return;
+  }
+
+  void* left_node = expressionable_callbacks(expressionable)->get_left_node(expressionable, node);
+  void* right_node = expressionable_callbacks(expressionable)->get_right_node(expressionable, node);
+
+  int left_node_type = expressionable_callbacks(expressionable)->get_node_type(expressionable, left_node);
+  int right_node_type = expressionable_callbacks(expressionable)->get_node_type(expressionable, right_node);
+  assert(left_node_type >= 0);
+  assert(right_node_type >= 0);
+
+  if (left_node_type != EXPRESSIONABLE_GENERIC_TYPE_EXPRESSION && right_node && right_node_type != EXPRESSIONABLE_GENERIC_TYPE_EXPRESSION)
+  {
+    return;
+  }
+
+  if (left_node_type != EXPRESSIONABLE_GENERIC_TYPE_EXPRESSION && right_node && right_node_type == EXPRESSIONABLE_GENERIC_TYPE_EXPRESSION)
+  {
+    const char* right_op = expressionable_callbacks(expressionable)->get_node_operator(expressionable, right_node);
+    const char* main_op = expressionable_callbacks(expressionable)->get_node_operator(expressionable, node);
+
+    if (expressionable_parser_left_op_has_priority(main_op, right_op))
+    {
+      expressionable_parser_node_shift_children_left(expressionable, node);
+
+      void** address_of_left = expressionable_callbacks(expressionable)->get_left_node_address(expressionable, node);
+      void** address_of_right = expressionable_callbacks(expressionable)->get_right_node_address(expressionable, node);
+      expressionable_parser_reorder_expression(expressionable, address_of_left);
+      expressionable_parser_reorder_expression(expressionable, address_of_right);
+    }
+  }
+}
+
 void expressionable_parse_for_operator(struct expressionable* expressionable)
 {
   struct token* op_token = expressionable_peek_next(expressionable);
@@ -150,6 +250,7 @@ void expressionable_parse_for_operator(struct expressionable* expressionable)
   void* node_right = expressionable_node_pop(expressionable);
   expressionable_callbacks(expressionable)->make_expression_node(expressionable, node_left, node_right, op);
   void* exp_node = expressionable_node_pop(expressionable);
+  expressionable_parser_reorder_expression(expressionable, &exp_node);
   expressionable_node_push(expressionable, exp_node);
 }
 
