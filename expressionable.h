@@ -84,4 +84,14 @@ struct expressionable
   struct vector* node_vec_out;
 };
 
+// < Expressionable functions start
+
+void expressionable_node_push(struct expressionable* expressionable, void* node_ptr);
+void* expressionable_node_pop(struct expressionable* expressionable);
+struct token* expressionable_token_next(struct expressionable* expressionable);
+void expressionable_parse(struct expressionable* expressionable);
+struct expressionable* expressionable_create(struct expressionable_config* config, struct vector* token_vector, struct vector* node_vector, int flags);
+
+// > Expressionable functions end
+
 #endif
