@@ -31,7 +31,7 @@ sudo apt-get install g++-multilib
   - Lexer: Done
   - Parser: Done
   - Code generator: Done
-  - Preprocessor: Not started
+  - Preprocessor: In Progress
   - Macro system: Not started
   - Semantic validator: Not started
 
