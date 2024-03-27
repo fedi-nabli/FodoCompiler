@@ -571,6 +571,10 @@ struct compile_process
     const char* abs_path;
   } cfile;
 
+  // Untampered token vector, contains defintions and source code tokens, the preprocessor
+  // will go through this vector and populate the "token_vec" vector after it is done
+  struct vector* token_vec_original;
+
   // A vector of tokens from lexical analysis
   struct vector* token_vec;
 
@@ -597,6 +601,10 @@ struct compile_process
   // Pointer to our codegenerator
   struct code_generator* generator;
   struct resolver_process* resolver;
+
+  // A vector of const char* the represents include directories
+  struct vector* include_dirs;
+  struct preprocessor* preprocessor;
 };
 
 // < Symbol structure start
@@ -1128,7 +1136,7 @@ void compiler_warning(struct compile_process* compiler, const char* msg, ...);
 
 int compile_file(const char* filename, const char* out_filename, int flags);
 
-struct compile_process* compile_process_create(const char* filename, const char* filename_out, int flags);
+struct compile_process* compile_process_create(const char* filename, const char* filename_out, int flags, struct compile_process* parent_process);
 
 // Compiler lex_process_functions from cprocess
 char compile_process_next_char(struct lex_process* lex_process);
@@ -1143,6 +1151,10 @@ int parse(struct compile_process* process);
 int codegen(struct compile_process* process);
 // Codegen register function
 struct code_generator* codegenerator_new(struct compile_process* process);
+
+// Preprocessor global functions
+struct preprocessor* preprocessor_create(struct compile_process* compiler);
+int preprocessor_run(struct compile_process* compiler);
 
 // Lexer helper functions
 bool keyword_is_datatype(const char* str);
