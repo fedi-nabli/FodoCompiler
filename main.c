@@ -7,7 +7,7 @@ int main(int argc, const char** argv)
 {
   const char* input_file = "./test.c";
   const char* output_file = "./test";
-  const char* option = "exec";
+  const char* option = "asm";
 
   if (argc > 1)
   {
