@@ -6,6 +6,10 @@
 #include <stdarg.h>
 #include <assert.h>
 
+#ifdef _WIN32
+  #include <sys/types.h>
+#endif
+
 static struct compile_process* current_process = NULL;
 static struct node* current_function = NULL;
 
