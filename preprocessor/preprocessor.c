@@ -708,6 +708,14 @@ struct token* preprocessor_hashtag_and_identifier(struct compile_process* compil
   return NULL;
 }
 
+/**
+ * @brief Returns true if there is a hashtag and any type of preprocessor if statement
+ * elif is not included
+ * 
+ * @param compiler 
+ * @return true 
+ * @return false 
+ */
 bool preprocessor_is_hashtag_and_any_starting_if(struct compile_process* compiler)
 {
   return preprocessor_hashtag_and_identifier(compiler, "if") ||
