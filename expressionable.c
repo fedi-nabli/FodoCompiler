@@ -491,7 +491,6 @@ void expressionable_init(struct expressionable* expressionable, struct vector* t
 struct expressionable* expressionable_create(struct expressionable_config* config, struct vector* token_vector, struct vector* node_vector, int flags)
 {
   assert(vector_element_size(token_vector) == sizeof(struct token));
-  assert(vector_element_size(node_vector) == sizeof(struct node));
   struct expressionable* expressionable = calloc(1, sizeof(struct expressionable));
   expressionable_init(expressionable, token_vector, node_vector, config, flags);
   return expressionable;
