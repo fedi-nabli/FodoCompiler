@@ -103,6 +103,7 @@ struct preprocessor_node
 void preprocessor_handle_token(struct compile_process* compiler, struct token* token);
 int preprocessor_parse_evaluate(struct compile_process* compiler, struct vector* token_vec);
 int preprocessor_evaluate(struct compile_process* compiler, struct preprocessor_node* root_node);
+void preprocessor_handle_elif_token(struct compile_process* compiler, bool previous_if_result);
 
 // > Preprocessor global functions end
 
@@ -493,6 +494,7 @@ bool preprocessor_is_preprocessor_keyword(const char* value)
          S_EQ(value, "error") ||
          S_EQ(value, "if") ||
          S_EQ(value, "elif") ||
+         S_EQ(value, "else") ||
          S_EQ(value, "endif") ||
          S_EQ(value, "ifdef") ||
          S_EQ(value, "ifndef") ||
@@ -827,6 +829,18 @@ void preprocessor_read_to_end_if(struct compile_process* compiler, bool true_cla
 {
   while (preprocessor_next_token_no_increment(compiler) && !preprocessor_hashtag_and_identifier(compiler, "endif"))
   {
+    // Read the else statement
+    if (preprocessor_hashtag_and_identifier(compiler, "else"))
+    {
+      preprocessor_read_to_end_if(compiler, !true_clause);
+      break;
+    }
+    else if (preprocessor_hashtag_and_identifier(compiler, "elif"))
+    {
+      preprocessor_handle_elif_token(compiler, true_clause);
+      break;
+    }
+
     if (true_clause)
     {
       preprocessor_handle_token(compiler, preprocessor_next_token(compiler));
@@ -978,6 +992,21 @@ void preprocessor_handle_if_token(struct compile_process* compiler)
 {
   int result = preprocessor_parse_evaluate(compiler, compiler->token_vec_original);
   preprocessor_read_to_end_if(compiler, result > 0);
+}
+
+void preprocessor_handle_elif_token(struct compile_process* compiler, bool previous_if_result)
+{
+  // Have we not yet resolved and IF statment? Then this else if is still valid
+  // evaluate it
+  if (!previous_if_result)
+  {
+    int result = preprocessor_parse_evaluate(compiler, compiler->token_vec_original);
+    preprocessor_read_to_end_if(compiler, result > 0);
+    return;
+  }
+
+  // Alerady a positive result? Then skip to endif
+  preprocessor_skip_to_endif(compiler);
 }
 
 void preprocessor_handle_ifdef_token(struct compile_process* compiler)
