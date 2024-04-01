@@ -49,7 +49,7 @@ int compile_file(const char* filename, const char* out_filename, int flags)
 
   if (preprocessor_run(process) != 0)
   {
-    return COMPILER_FAILED_WITH_ERRORS;
+    return PREPROCESSOR_GENERAL_ERROR;
   }
 
   // Perform parsing

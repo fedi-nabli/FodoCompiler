@@ -1126,5 +1126,5 @@ int preprocessor_run(struct compile_process* compiler)
     token = preprocessor_next_token(compiler);
   }
 
-  return 0;
+  return PREPROCESSOR_ALL_OK;
 }

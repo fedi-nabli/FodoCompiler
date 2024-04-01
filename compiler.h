@@ -78,6 +78,13 @@ enum
   LEXICAL_ANALYSIS_INPUT_ERROR
 };
 
+// Preprocessor run enums
+enum
+{
+  PREPROCESSOR_ALL_OK,
+  PREPROCESSOR_GENERAL_ERROR
+};
+
 // Parser enums
 enum
 {
