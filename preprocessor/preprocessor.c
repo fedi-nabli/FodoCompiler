@@ -19,7 +19,7 @@ enum
   PREPROCESSOR_IDENTIFIER_NODE,
   PREPROCESSOR_KEYWORD_NODE,
   PREPROCESSOR_UNARY_NODE,
-  PREPROCESSOR_EXPRSSION_NODE,
+  PREPROCESSOR_EXPRESSION_NODE,
   PREPROCESSOR_PARENTHESES_NODE,
   PREPROCESSOR_JOINED_NODE,
   PREPROCESSOR_TENARY_NODE
@@ -101,6 +101,8 @@ struct preprocessor_node
 // < Preprocessor global functions start
 
 void preprocessor_handle_token(struct compile_process* compiler, struct token* token);
+int preprocessor_parse_evaluate(struct compile_process* compiler, struct vector* token_vec);
+int preprocessor_evaluate(struct compile_process* compiler, struct preprocessor_node* root_node);
 
 // > Preprocessor global functions end
 
@@ -211,7 +213,7 @@ void preprocessor_make_unary_indirection_node(struct expressionable* expressiona
 void preprocessor_make_expression_node(struct expressionable* expressionable, void* left_node_ptr, void* right_node_ptr, const char* op)
 {
   struct preprocessor_node exp_node;
-  exp_node.type = PREPROCESSOR_EXPRSSION_NODE;
+  exp_node.type = PREPROCESSOR_EXPRESSION_NODE;
   exp_node.exp_node.left_node = left_node_ptr;
   exp_node.exp_node.right_node = right_node_ptr;
   exp_node.exp_node.op = op;
@@ -236,7 +238,7 @@ void preprocessor_make_tenary_node(struct expressionable* expressionable, void* 
 
 int preprocessor_get_node_type(struct expressionable* expressionable, void* node)
 {
-  int generic_type = EXPRESSIONAbLE_GENERIC_TYPE_NON_GENERIC;
+  int generic_type = EXPRESSIONABLE_GENERIC_TYPE_NON_GENERIC;
   struct preprocessor_node* preprocessor_node = node;
   switch (preprocessor_node->type)
   {
@@ -253,7 +255,7 @@ int preprocessor_get_node_type(struct expressionable* expressionable, void* node
       generic_type = EXPRESSIONABLE_GENERIC_TYPE_UNARY;
       break;
 
-    case PREPROCESSOR_EXPRSSION_NODE:
+    case PREPROCESSOR_EXPRESSION_NODE:
       generic_type = EXPRESSIONABLE_GENERIC_TYPE_EXPRESSION;
       break;
 
@@ -268,13 +270,13 @@ int preprocessor_get_node_type(struct expressionable* expressionable, void* node
 void* preprocessor_get_left_node(struct expressionable* expressionable, void* target_node)
 {
   struct preprocessor_node* node = target_node;
-  return node->exp_node.right_node;
+  return node->exp_node.left_node;
 }
 
 void* preprocessor_get_right_node(struct expressionable* expressionable, void* target_node)
 {
   struct preprocessor_node* node = target_node;
-  return node->exp_node.left_node;
+  return node->exp_node.right_node;
 }
 
 const char* preprocessor_get_node_operator(struct expressionable* expressionable, void* target_node)
@@ -316,7 +318,7 @@ void* preprocessor_join_nodes(struct expressionable* expressionable, void* previ
 bool preprocessor_expecting_additional_node(struct expressionable* expressionable, void* node_ptr)
 {
   struct preprocessor_node* node = node_ptr;
-  return node->type = PREPROCESSOR_KEYWORD_NODE && S_EQ(node->sval, "defined");
+  return node->type == PREPROCESSOR_KEYWORD_NODE && S_EQ(node->sval, "defined");
 }
 
 bool preprocessor_is_custom_operator(struct expressionable* expresisonable, struct token* token)
@@ -649,6 +651,70 @@ struct preprocessor_definition* preprocessor_get_definition(struct preprocessor*
   return definition;
 }
 
+struct vector* preprocessor_definition_value_for_standard(struct preprocessor_definition* definition)
+{
+  return definition->standard.value;
+}
+
+struct vector* preprocessor_definition_value_with_arguments(struct preprocessor_definition* definition, struct preprocessor_function_arguments* arguments)
+{
+  if (definition->type == PREPROCESSOR_DEFINITION_NATIVE_CALLBACK)
+  {
+    #warning "Implement definition value for native"
+    return NULL;
+  }
+  else if (definition->type == PREPROCESSOR_DEFINITION_TYPEDEF)
+  {
+    #warning "Preprocessor definition typedef"
+    return NULL;
+  }
+
+  return preprocessor_definition_value_for_standard(definition);
+}
+
+struct vector* preprocessor_definition_value(struct preprocessor_definition* definition)
+{
+  return preprocessor_definition_value_with_arguments(definition, NULL);
+}
+
+int preprocessor_parse_evaluate_token(struct compile_process* compiler, struct token* token)
+{
+  struct vector* token_vec = vector_create(sizeof(struct token));
+  vector_push(token_vec, token);
+  return preprocessor_parse_evaluate(compiler, token_vec);
+}
+
+int preprocessor_definition_evaluated_value_for_standard(struct preprocessor_definition* definition)
+{
+  struct token* token = vector_back(definition->standard.value);
+  if (token->type == TOKEN_TYPE_IDENTIFIER)
+  {
+    return preprocessor_parse_evaluate_token(definition->preprocessor->compiler, token);
+  }
+
+  if (token->type != TOKEN_TYPE_NUMBER)
+  {
+    compiler_error(definition->preprocessor->compiler, "The definition must hold a number value. Unable to use macro IF");
+  }
+
+  return token->llnum;
+}
+
+int preprocessor_definition_evaluated_value(struct preprocessor_definition* definition, struct preprocessor_function_arguments* arguments)
+{
+  if (definition->type == PREPROCESSOR_DEFINITION_STANDARD)
+  {
+    return preprocessor_definition_evaluated_value_for_standard(definition);
+  }
+  else if(definition->type == PREPROCESSOR_DEFINITION_NATIVE_CALLBACK)
+  {
+    #warning "Implement native callbacks"
+    return -1;
+  }
+
+  compiler_error(definition->preprocessor->compiler, "The definition cannot be evaluated into a number");
+}
+
 bool preprocessor_is_next_macro_arguments(struct compile_process* compiler)
 {
   bool res = false;
@@ -782,6 +848,34 @@ int preprocessor_evaluate_number(struct preprocessor_node* node)
   return node->const_val.llnum;
 }
 
+int preprocessor_evaluate_identifier(struct compile_process* compiler, struct preprocessor_node* node)
+{
+  struct preprocessor* preprocessor = compiler->preprocessor;
+  struct preprocessor_definition* definition = preprocessor_get_definition(preprocessor, node->sval);
+  if (!definition)
+  {
+    return true;
+  }
+
+  if (vector_count(preprocessor_definition_value(definition)) > 1)
+  {
+    struct vector* node_vector = vector_create(sizeof(struct preprocessor_node*));
+    struct expressionable* expressionable = expressionable_create(&preprocessor_expressionable_config, preprocessor_definition_value(definition), node_vector, EXPRESSIONABLE_FLAG_IS_PREPROCESSOR_EXPRESSION);
+    expressionable_parse(expressionable);
+    struct preprocessor_node* node = expressionable_node_pop(expressionable);
+    
+    int val = preprocessor_evaluate(compiler, node);
+    return val;
+  }
+
+  if (vector_count(preprocessor_definition_value(definition)) == 0)
+  {
+    return false;
+  }
+
+  return preprocessor_definition_evaluated_value(definition, NULL);
+}
+
 int preprocessor_evaluate(struct compile_process* compiler, struct preprocessor_node* root_node)
 {
   struct preprocessor_node* current = root_node;
@@ -791,6 +885,10 @@ int preprocessor_evaluate(struct compile_process* compiler, struct preprocessor_
   {
     case PREPROCESSOR_NUMBER_NODE:
       result = preprocessor_evaluate_number(current);
+      break;
+
+    case PREPROCESSOR_IDENTIFIER_NODE:
+      result = preprocessor_evaluate_identifier(compiler, current);
       break;
   }
 
