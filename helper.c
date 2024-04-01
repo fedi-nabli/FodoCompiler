@@ -338,3 +338,72 @@ struct datatype* datatype_pointer_reduce(struct datatype* datatype, int by)
 
   return new_datatye;
 }
+
+long arithmetic(struct compile_process* compiler, long left_operand, long right_operand, const char* op, bool* success)
+{
+  *success = true;
+  int result = 0;
+
+  if (S_EQ(op, "*"))
+  {
+    result = left_operand * right_operand;
+  }
+  else if (S_EQ(op, "/"))
+  {
+    result = left_operand / right_operand;
+  }
+  else if (S_EQ(op, "+"))
+  {
+    result = left_operand + right_operand;
+  }
+  else if (S_EQ(op, "-"))
+  {
+    result = left_operand - right_operand;
+  }
+  else if (S_EQ(op, "=="))
+  {
+    result = left_operand == right_operand;
+  }
+  else if (S_EQ(op, "!="))
+  {
+    result = left_operand != right_operand;
+  }
+  else if (S_EQ(op, ">"))
+  {
+    result = left_operand > right_operand;
+  }
+  else if (S_EQ(op, "<"))
+  {
+    result = left_operand < right_operand;
+  }
+  else if (S_EQ(op, ">="))
+  {
+    result = left_operand >= right_operand;
+  }
+  else if (S_EQ(op, "<="))
+  {
+    result = left_operand <= right_operand;
+  }
+  else if (S_EQ(op, "<<"))
+  {
+    result = left_operand << right_operand;
+  }
+  else if (S_EQ(op, ">>"))
+  {
+    result = left_operand >> right_operand;
+  }
+  else if (S_EQ(op, "&&"))
+  {
+    result = left_operand && right_operand;
+  }
+  else if (S_EQ(op, "||"))
+  {
+    result = left_operand || right_operand;
+  }
+  else
+  {
+    *success = false;
+  }
+
+  return result;
+}

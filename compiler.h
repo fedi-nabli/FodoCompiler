@@ -1380,6 +1380,7 @@ bool unary_operand_compatible(struct token* token);
 void datatype_decrement_pointer(struct datatype* dtype);
 struct datatype* datatype_thats_a_pointer(struct datatype* d1, struct datatype* d2);
 struct datatype* datatype_pointer_reduce(struct datatype* datatype, int by);
+long arithmetic(struct compile_process* compiler, long left_operand, long right_operand, const char* op, bool* success);
 
 // > General helper functions end
 

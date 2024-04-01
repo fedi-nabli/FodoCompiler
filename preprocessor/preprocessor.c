@@ -843,6 +843,18 @@ void preprocessor_read_to_end_if(struct compile_process* compiler, bool true_cla
   }
 }
 
+int preprocessor_arithmetic(struct compile_process* compiler, long left_operand, long right_operand, const char* op)
+{
+  bool success = false;
+  long result = arithmetic(compiler, left_operand, right_operand, op, &success);
+  if (!success)
+  {
+    compiler_error(compiler, "We do not support the operator: '%s' for preprocessor arithmetic\n", op);
+  }
+
+  return result;
+}
+
 int preprocessor_evaluate_number(struct preprocessor_node* node)
 {
   return node->const_val.llnum;
@@ -876,6 +888,23 @@ int preprocessor_evaluate_identifier(struct compile_process* compiler, struct pr
   return preprocessor_definition_evaluated_value(definition, NULL);
 }
 
+int preprocessor_evaluate_exp(struct compile_process* compiler, struct preprocessor_node* node)
+{
+  // if (preprocessor_exp_is_macro_function_call(node))
+  // {
+  //   #warning "Handle macro function call"
+  // }
+
+  long left_operand = preprocessor_evaluate(compiler, node->exp_node.left_node);
+  if (node->exp_node.right_node->type == PREPROCESSOR_TENARY_NODE)
+  {
+    #warning "Handle tenary node"
+  }
+
+  long right_operand = preprocessor_evaluate(compiler, node->exp_node.right_node);
+  return preprocessor_arithmetic(compiler, left_operand, right_operand, node->exp_node.op);
+}
+
 int preprocessor_evaluate(struct compile_process* compiler, struct preprocessor_node* root_node)
 {
   struct preprocessor_node* current = root_node;
@@ -889,6 +918,10 @@ int preprocessor_evaluate(struct compile_process* compiler, struct preprocessor_
 
     case PREPROCESSOR_IDENTIFIER_NODE:
       result = preprocessor_evaluate_identifier(compiler, current);
+      break;
+
+    case PREPROCESSOR_EXPRESSION_NODE:
+      result = preprocessor_evaluate_exp(compiler, current);
       break;
   }
 
