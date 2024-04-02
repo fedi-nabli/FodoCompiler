@@ -1008,7 +1008,7 @@ int preprocessor_macro_function_execute(struct compile_process* compiler, const 
   struct preprocessor_definition* definition = preprocessor_get_definition(preprocessor, function_name);
   if (!definition)
   {
-    compiler_error(compiler, "Trying to vall unknown macro function %s", function_name);
+    compiler_error(compiler, "Trying to call unknown macro function %s", function_name);
   }
 
   if (!preprocessor_is_macro_function(definition))
@@ -1280,6 +1280,38 @@ void preprocessor_handle_symbol(struct compile_process* compiler, struct token* 
   }
 }
 
+int preprocessor_handle_identifier_for_token_vector(struct compile_process* compiler, struct vector* src_vec, struct vector* dst_vec, struct token* token)
+{
+  struct preprocessor_definition* definition = preprocessor_get_definition(compiler->preprocessor, token->sval);
+  if (!definition)
+  {
+    // Nothing to do with us, maybe a variable of some kind. Not macro related
+    preprocessor_token_push_to_dst(dst_vec, token);
+    return -1;
+  }
+
+  if (definition->type == PREPROCESSOR_DEFINITION_TYPEDEF)
+  {
+    preprocessor_token_vec_push_src_to_dst(compiler, preprocessor_definition_value(definition), dst_vec);
+    return 0;
+  }
+
+  if (token_is_operator(vector_peek_no_increment(src_vec), "("))
+  {
+    #warning "Finish macro functions first"
+    // struct preprocessor_function_arguments* arguments = preprocessor_handle_identifier_macro_call_arguments(compiler, src_vec);
+  }
+
+  struct vector* definition_val = preprocessor_definition_value(definition);
+  preprocessor_token_vec_push_src_resolve_definitions(compiler, preprocessor_definition_value(definition), dst_vec);
+  return 0;
+}
+
+int preprocessor_handle_identifier(struct compile_process* compiler, struct token* token)
+{
+  return preprocessor_handle_identifier_for_token_vector(compiler, compiler->token_vec_original, compiler->token_vec, token);
+}
+
 void preprocessor_handle_token(struct compile_process* compiler, struct token* token)
 {
   switch (token->type)
@@ -1289,6 +1321,10 @@ void preprocessor_handle_token(struct compile_process* compiler, struct token* t
       preprocessor_handle_symbol(compiler, token);
       break;
     
+    case TOKEN_TYPE_IDENTIFIER:
+      preprocessor_handle_identifier(compiler, token);
+      break;
+
     case TOKEN_TYPE_NEWLINE:
       // Ignored
       break;
