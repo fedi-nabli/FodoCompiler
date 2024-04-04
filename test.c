@@ -1,10 +1,8 @@
-#define ABC !1
+#define TEST(a, b) a ## b
 
-#if ABC > 0
-#error "test"
-#endif
+int printf(const char* fmt, ...);
 
 int main()
 {
-  return !0;
+  printf("%i\n", TEST(50, 30));
 }

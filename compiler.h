@@ -3,7 +3,10 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include <stdbool.h>
+
+#define FAIL_ERR(message) assert(0 == 1 && message)
 
 #define S_EQ(str, str2) \
         (str && str2 && (strcmp(str, str2) == 0))
@@ -1193,6 +1196,7 @@ bool token_is_operator(struct token* token, const char* val);
 bool is_operator_token(struct token* token);
 bool token_is_nl_comment_or_newline_seperator(struct token* token);
 bool token_is_primitive_keyword(struct token* token);
+struct vector* tokens_join_vector(struct compile_process* compiler, struct vector* token_vec);
 
 // Datatype helper functions
 bool datatype_is_struct_or_union_for_name(const char* name);

@@ -114,6 +114,7 @@ void preprocessor_handle_elif_token(struct compile_process* compiler, bool previ
 int preprocessor_handle_identifier_for_token_vector(struct compile_process* compiler, struct vector* src_vec, struct vector* dst_vec, struct token* token);
 struct vector* preprocessor_definition_value(struct preprocessor_definition* definition);
 void preprocessor_token_vec_push_src_resolve_definition(struct compile_process* compiler, struct vector* src_vec, struct vector* dst_vec, struct token* token);
+void preprocessor_macro_function_push_something(struct compile_process* compiler, struct preprocessor_definition* definition, struct preprocessor_function_arguments* arguments, struct token* arg_token, struct vector* definition_token_vec, struct vector* value_vec_target);
 
 // > Preprocessor global functions end
 
@@ -1219,9 +1220,66 @@ int preprocessor_macro_function_push_something_definition(struct compile_process
   return -1;
 }
 
+void preprocessor_handle_concat_part(struct compile_process* compiler, struct preprocessor_definition* definition, struct preprocessor_function_arguments* arguments, struct token* token, struct vector* definition_vector_vec, struct vector* value_vec_target)
+{
+  preprocessor_macro_function_push_something(compiler, definition, arguments, token, definition_vector_vec, value_vec_target);
+}
+
+void preprocessor_handle_concat_finalize(struct compile_process* compiler, struct vector* tmp_vec, struct vector* value_vec_target)
+{
+  struct vector* joined_vec = tokens_join_vector(compiler, tmp_vec);
+  vector_insert(value_vec_target, joined_vec, 0);
+}
+
+void preprocessor_handle_concat(struct compile_process* compiler, struct preprocessor_definition* definition, struct preprocessor_function_arguments* arguments, struct token* arg_token, struct vector* definition_token_vec, struct vector* value_vec_target)
+{
+  // Let's skip the hashtags "##"
+  vector_peek(definition_token_vec);
+  vector_peek(definition_token_vec);
+
+  struct token* right_token = vector_peek(definition_token_vec);
+  if (!right_token)
+  {
+    compiler_error(compiler, "No right operand provided for concat preprocessor operatir ##");
+  }
+
+  struct vector* tmp_vec = vector_create(sizeof(struct token));
+  preprocessor_handle_concat_part(compiler, definition, arguments, arg_token, definition_token_vec, tmp_vec);
+  preprocessor_handle_concat_part(compiler, definition, arguments, right_token, definition_token_vec, tmp_vec);
+  preprocessor_handle_concat_finalize(compiler, tmp_vec, value_vec_target);
+}
+
+bool preprocessor_is_next_double_hash(struct vector* definition_token_vec)
+{
+  bool is_double_dash = true;
+  vector_save(definition_token_vec);
+
+  struct token* next_token = vector_peek(definition_token_vec);
+  if (!token_is_symbol(next_token, '#'))
+  {
+    is_double_dash = false;
+    goto out;
+  }
+
+  next_token = vector_peek(definition_token_vec);
+  if (!token_is_symbol(next_token, '#'))
+  {
+    is_double_dash = false;
+    goto out;
+  }
+
+out:
+  vector_restore(definition_token_vec);
+  return is_double_dash;
+}
+
 void preprocessor_macro_function_push_something(struct compile_process* compiler, struct preprocessor_definition* definition, struct preprocessor_function_arguments* arguments, struct token* arg_token, struct vector* definition_token_vec, struct vector* value_vec_target)
 {
-  #warning "Process concat"
+  if (preprocessor_is_next_double_hash(definition_token_vec))
+  {
+    preprocessor_handle_concat(compiler, definition, arguments, arg_token, definition_token_vec, value_vec_target);
+    return;
+  }
 
   int res = preprocessor_macro_function_push_something_definition(compiler, definition, arguments, arg_token, definition_token_vec, value_vec_target);
   if (res == -1)
