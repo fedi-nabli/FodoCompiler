@@ -1,7 +1,9 @@
-typedef struct dog
-{
-  int x;
-  int y;
-} ABC;
+#define TEST_FUNC(s) #s
 
-ABC x;
+int printf(const char* s, ...);
+
+int main()
+{
+  const char* s = TEST_FUNC(hello world);
+  printf("%s\n", s);
+}
