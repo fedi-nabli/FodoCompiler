@@ -3,3 +3,8 @@
 #if ABC > 0
 #error "test"
 #endif
+
+int main()
+{
+  return !0;
+}
