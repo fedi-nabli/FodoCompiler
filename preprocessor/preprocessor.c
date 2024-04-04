@@ -455,6 +455,14 @@ void preprocessor_token_vec_push_keyword_and_identifier(struct vector* token_vec
   vector_push(token_vec, &t2);
 }
 
+void preprocessor_token_push_semicolon(struct compile_process* compiler)
+{
+  struct token token;
+  token.type = TOKEN_TYPE_SYMBOL;
+  token.cval = ';';
+  vector_push(compiler->token_vec, &token);
+}
+
 int preprocessor_definition_argument_exists(struct preprocessor_definition* definition, const char* name)
 {
   vector_set_peek_pointer(definition->standard.arguments, 0);
@@ -1018,6 +1026,76 @@ int preprocessor_macro_function_push_argument(struct compile_process* compiler, 
   return argument_index;
 }
 
+void preprocessor_handle_typedef_body_for_brackets(struct compile_process* compiler, struct vector* token_vec, struct vector* src_vec, bool overflow_use_token_vec)
+{
+  struct token* token = preprocessor_next_token_with_vector(compiler, src_vec, overflow_use_token_vec);
+  while(token)
+  {
+    if (token_is_symbol(token, '{'))
+    {
+      vector_push(token_vec, token);
+      preprocessor_handle_typedef_body_for_brackets(compiler, token_vec, src_vec, overflow_use_token_vec);
+      token = preprocessor_next_token_with_vector(compiler, src_vec, overflow_use_token_vec);
+      continue;
+    }
+
+    vector_push(token_vec, token);
+    if (token_is_symbol(token, '}'))
+    {
+      break;
+    }
+    token = preprocessor_next_token_with_vector(compiler, src_vec, overflow_use_token_vec);
+  }
+}
+
+void preprocessor_handle_typedef_body_for_struct_or_union(struct compile_process* compiler, struct vector* token_vec, struct typedef_type* td, struct vector* src_vec, bool overflow_use_token_vec)
+{
+  struct token* token = preprocessor_next_token_with_vector(compiler, src_vec, overflow_use_token_vec);
+  assert(token_is_keyword(token, "struct"));
+
+  td->type = TYPEDEF_TYPE_STRUCTURE_TYPEDEF;
+
+  // Push the struct keyword
+  vector_push(token_vec, token);
+
+  token = preprocessor_next_token_with_vector(compiler, src_vec, overflow_use_token_vec);
+  // Do we have a name for this structure
+  if (token->type == TOKEN_TYPE_IDENTIFIER)
+  {
+    td->structure.sname = token->sval;
+    vector_push(token_vec, token);
+    token = preprocessor_peek_next_token_with_vector_no_increment(compiler, src_vec, overflow_use_token_vec);
+    if (token->type == TOKEN_TYPE_IDENTIFIER)
+    {
+      // just a declaration; " typedef struct Point point; "
+      vector_push(token_vec, token);
+      return;
+    }
+  }
+
+  // Handle typedef structure with body.
+  while(token)
+  {
+    if (token_is_symbol(token, '{'))
+    {
+      // Structure typedef
+      td->type = TYPEDEF_TYPE_STRUCTURE_TYPEDEF;
+      vector_push(token_vec, token);
+      preprocessor_handle_typedef_body_for_brackets(compiler, token_vec, src_vec, overflow_use_token_vec);
+      token = preprocessor_next_token_with_vector(compiler, src_vec, overflow_use_token_vec);
+      continue;
+    }
+
+    if (token_is_symbol(token, ';'))
+    {
+      break;
+    }
+
+    preprocessor_token_vec_push_src_resolve_definition(compiler, src_vec, token_vec, token);
+    token = preprocessor_next_token_with_vector(compiler, src_vec, overflow_use_token_vec);
+  }
+}
+
 void preprocessor_handle_typdef_body_for_non_struct_or_union(struct compile_process* compiler, struct vector* token_vec, struct typedef_type* td, struct vector* src_vec, bool overflow_use_token_vec)
 {
   td->type = TYPEDEF_TYPE_STANDARD;
@@ -1041,7 +1119,7 @@ void preprocessor_handle_typedef_body(struct compile_process* compiler, struct v
   struct token* token = preprocessor_peek_next_token_with_vector_no_increment(compiler, src_vec, overflow_use_token_vec);
   if (token_is_keyword(token, "struct") || token_is_keyword(token, "union"))
   {
-    #warning "Don't forget to hanlde typedef structs"
+    preprocessor_handle_typedef_body_for_struct_or_union(compiler, token_vec, td, src_vec, overflow_use_token_vec);
   }
   else
   {
@@ -1072,9 +1150,15 @@ void preprocessor_handle_typedef_token(struct compile_process* compiler, struct 
   // Pop off the name token
   vector_pop(token_vec);
 
+  // This is a typedef structure we, need to push the structure body
+  // to the output so it van be found
   if (td.type == TYPEDEF_TYPE_STRUCTURE_TYPEDEF)
   {
-    #warning "Deal with structure typedef"
+    preprocessor_token_vec_push_src(compiler, token_vec);
+    preprocessor_token_push_semicolon(compiler);
+
+    token_vec = vector_create(sizeof(struct token));
+    preprocessor_token_vec_push_keyword_and_identifier(token_vec, "struct", td.structure.sname);
   }
 
   struct preprocessor* preprocessor = compiler->preprocessor;

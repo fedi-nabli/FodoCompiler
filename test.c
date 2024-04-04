@@ -1,2 +1,7 @@
-typedef int ABC;
-ABC x = 50;
+typedef struct dog
+{
+  int x;
+  int y;
+} ABC;
+
+ABC x;
