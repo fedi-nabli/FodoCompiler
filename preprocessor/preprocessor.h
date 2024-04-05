@@ -100,4 +100,12 @@ struct preprocessor
 
 // > Preprocessor structures end
 
+// Preprocessor native funtions
+void preprocessor_create_definitions(struct preprocessor* preprocessor);
+
+// Preprocessor global functions
+struct token* preprocessor_previous_token(struct compile_process* compiler);
+struct vector* preprocessor_build_value_vector_for_integer(int value);
+struct preprocessor_definition* preprocessor_definition_create_native(struct preprocessor* preprocessor, const char* name, PREPROCESSOR_DEFINITION_NATIVE_CALL_EVALUATION evaluate, PREPROCESSOR_DEFINITION_NATIVE_CALL_VALUE value);
+
 #endif
