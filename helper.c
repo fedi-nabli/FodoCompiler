@@ -407,3 +407,15 @@ long arithmetic(struct compile_process* compiler, long left_operand, long right_
 
   return result;
 }
+
+bool file_exists(const char* filename)
+{
+  FILE* f = fopen(filename, "r");
+  if (!f)
+  {
+    return false;
+  }
+
+  fclose(f);
+  return true;
+}

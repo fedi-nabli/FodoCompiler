@@ -4,6 +4,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+const char* default_include_dirs[] = {"./fd_includes", "../fd_includes", "/usr/include/fodo-includes", "/usr/include"};
+
+const char* compiler_include_dir_begin(struct compile_process* process)
+{
+  vector_set_peek_pointer(process->include_dirs, 0);
+  const char* dir = vector_peek_ptr(process->include_dirs);
+  return dir;
+}
+
+const char* compiler_include_dir_next(struct compile_process* process)
+{
+  const char* dir = vector_peek_ptr(process->include_dirs);
+  return dir;
+}
+
+void compiler_setup_default_include_directories(struct vector* include_vec)
+{
+  size_t total = sizeof(default_include_dirs) / sizeof(const char*);
+  for (size_t i = 0; i < total; i++)
+  {
+    vector_push(include_vec, &default_include_dirs[i]);
+  }
+}
+
 struct compile_process* compile_process_create(const char* filename, const char* filename_out, int flags, struct compile_process* parent_process)
 {
   FILE* file = fopen(filename, "r");
@@ -50,7 +74,8 @@ struct compile_process* compile_process_create(const char* filename, const char*
   {
     process->preprocessor = preprocessor_create(process);
     process->include_dirs = vector_create(sizeof(const char*));
-    // Setup default include dir
+    // Load the default include directories
+    compiler_setup_default_include_directories(process->include_dirs);
   }
 
   return process;

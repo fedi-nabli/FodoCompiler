@@ -1170,6 +1170,10 @@ struct code_generator* codegenerator_new(struct compile_process* process);
 struct preprocessor* preprocessor_create(struct compile_process* compiler);
 int preprocessor_run(struct compile_process* compiler);
 
+// Compile process helper functions
+const char* compiler_include_dir_begin(struct compile_process* process);
+const char* compiler_include_dir_next(struct compile_process* process);
+
 // Lexer helper functions
 bool keyword_is_datatype(const char* str);
 
@@ -1396,6 +1400,7 @@ void datatype_decrement_pointer(struct datatype* dtype);
 struct datatype* datatype_thats_a_pointer(struct datatype* d1, struct datatype* d2);
 struct datatype* datatype_pointer_reduce(struct datatype* datatype, int by);
 long arithmetic(struct compile_process* compiler, long left_operand, long right_operand, const char* op, bool* success);
+bool file_exists(const char* filename);
 
 // > General helper functions end
 
