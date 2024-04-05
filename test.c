@@ -1,8 +1,7 @@
-#define TEST(a, b) a ## b
-
-int printf(const char* fmt, ...);
+int y = 3;
+int x = __LINE__;
 
 int main()
 {
-  printf("%i\n", TEST(50, 30));
+  return __LINE__;
 }
