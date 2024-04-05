@@ -62,6 +62,16 @@ struct compile_process* compile_include_for_included_dir(const char* include_dir
   return process;
 }
 
+/**
+ * @brief Includes a file to be compiled, returns a new compile process that represents the file to be compiles
+ * 
+ * Note: Only lexical analysis and preprocessing are done for compiler includes
+ * Parsing and code generation are excluded
+ * 
+ * @param filename 
+ * @param parent_process 
+ * @return struct compile_process* 
+ */
 struct compile_process* compile_include(const char* filename, struct compile_process* parent_process)
 {
   struct compile_process* new_process = NULL;

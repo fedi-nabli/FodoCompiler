@@ -1173,6 +1173,7 @@ int preprocessor_run(struct compile_process* compiler);
 // Compile process helper functions
 const char* compiler_include_dir_begin(struct compile_process* process);
 const char* compiler_include_dir_next(struct compile_process* process);
+struct compile_process* compile_include(const char* filename, struct compile_process* parent_process);
 
 // Lexer helper functions
 bool keyword_is_datatype(const char* str);

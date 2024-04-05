@@ -180,6 +180,17 @@ struct token* preprocessor_peek_next_token_skip_nl(struct compile_process* compi
   return token;
 }
 
+struct token* preprocessor_next_token_skip_nl(struct compile_process* compiler)
+{
+  struct token* token = preprocessor_next_token(compiler);
+  while (token && token->type == TOKEN_TYPE_NEWLINE)
+  {
+    token = preprocessor_next_token(compiler);
+  }
+
+  return token;
+}
+
 struct token* preprocessor_peek_next_token_with_vector_no_increment(struct compile_process* compiler, struct vector* priority_token_vec, bool overflow_use_compiler_tokens)
 {
   struct token* token = vector_peek_no_increment(priority_token_vec);
@@ -621,6 +632,16 @@ bool preprocessor_token_is_ifndef(struct token* token)
   }
 
   return (S_EQ(token->sval, "ifndef"));
+}
+
+bool preprocessor_token_is_include(struct token* token)
+{
+  if (!preprocessor_token_is_preprocessor_keyword(token))
+  {
+    return false;
+  }
+
+  return (S_EQ(token->sval, "include"));
 }
 
 bool preprocessor_token_is_typedef(struct token* token)
@@ -1666,6 +1687,24 @@ void preprocessor_handle_ifndef_token(struct compile_process* compiler)
   preprocessor_read_to_end_if(compiler, definition == NULL);
 }
 
+void preprocessor_handle_include_token(struct compile_process* compiler)
+{
+  struct token* file_path_token = preprocessor_next_token_skip_nl(compiler);
+  if (!file_path_token)
+  {
+    compiler_error(compiler, "No file path provided for include\n");
+  }
+
+  struct compile_process* new_compile_process = compile_include(file_path_token->sval, compiler);
+  if (!new_compile_process)
+  {
+    #warning "Check for static includes"
+    compiler_error(compiler, "The file provided does not exist, unable to include %s\n", file_path_token->sval);
+  }
+
+  preprocessor_token_vec_push_src(compiler, new_compile_process->token_vec);
+}
+
 int preprocessor_handle_hashtag_token(struct compile_process* compiler, struct token* token)
 {
   bool is_preprocessed = false;
@@ -1705,6 +1744,11 @@ int preprocessor_handle_hashtag_token(struct compile_process* compiler, struct t
   else if (preprocessor_token_is_ifndef(next_token))
   {
     preprocessor_handle_ifndef_token(compiler);
+    is_preprocessed = true;
+  }
+  else if (preprocessor_token_is_include(next_token))
+  {
+    preprocessor_handle_include_token(compiler);
     is_preprocessed = true;
   }
 

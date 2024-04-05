@@ -1,7 +1,6 @@
-int y = 3;
-int x = __LINE__;
+#include "test.h"
 
 int main()
 {
-  return __LINE__;
+  return ABC;
 }
