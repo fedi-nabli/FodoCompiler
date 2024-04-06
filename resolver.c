@@ -629,6 +629,14 @@ struct resolver_entity* resolver_follow_variable(struct resolver_process* resolv
   return entity;
 }
 
+bool resolver_do_indirection(struct resolver_entity* entity)
+{
+  struct resolver_result* result = entity->result;
+  return entity->type != RESOLVER_ENTITY_TYPE_FUNCTION_CALL &&
+         !(result->flags & RESOLVER_RESULT_FLAG_DOES_GET_ADDRESS) &&
+         entity->type != RESOLVER_ENTITY_TYPE_CAST;
+}
+
 struct resolver_entity* resolver_follow_struct_exp(struct resolver_process* resolver, struct node* node, struct resolver_result* result)
 {
   // a.b
@@ -639,7 +647,7 @@ struct resolver_entity* resolver_follow_struct_exp(struct resolver_process* reso
   {
     // a->b (do not merge)
     rule.left.flags = RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_NEXT_ENTITY;
-    if (left_entity->type != RESOLVER_ENTITY_TYPE_FUNCTION_CALL)
+    if (resolver_do_indirection(left_entity))
     {
       // int* a;
       // *a = 50;
@@ -828,6 +836,16 @@ struct resolver_entity* resolver_follow_cast(struct resolver_process* resolver, 
   operand_entity->flags |= RESOLVER_ENTITY_FLAG_WAS_CASTED;
 
   struct resolver_entity* cast_entity = resolver_create_new_cast_entity(resolver, operand_entity->scope, &node->cast.dtype);
+  if (datatype_is_struct_or_union(&node->cast.dtype))
+  {
+    if (!cast_entity->scope)
+    {
+      cast_entity->scope = resolver->scope.current;
+    }
+
+    result->last_struct_union_entity = cast_entity;
+  }
+
   resolver_result_entity_push(result, cast_entity);
   return cast_entity;
 }
@@ -851,6 +869,7 @@ struct resolver_entity* resolver_follow_indirection(struct resolver_process* res
 struct resolver_entity* resolver_follow_unary_address(struct resolver_process* resolver, struct node* node, struct resolver_result* result)
 {
   // &a.b.c
+  result->flags |= RESOLVER_RESULT_FLAG_DOES_GET_ADDRESS;
   resolver_follow_part(resolver, node->unary.operand, result);
   struct resolver_entity* last_entity = resolver_result_peek(result);
   struct resolver_entity* unary_address_entity = resolver_create_new_unary_get_address_entity(resolver, result, &last_entity->dtype, last_entity->scope, node);
