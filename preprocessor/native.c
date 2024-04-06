@@ -31,5 +31,6 @@ struct vector* preprocessor_line_macro_value(struct preprocessor_definition* def
 
 void preprocessor_create_definitions(struct preprocessor* preprocessor)
 {
+  #warning "Add other predefined macro functions"
   preprocessor_definition_create_native(preprocessor, "__LINE__", preprocessor_line_macro_evaluate, preprocessor_line_macro_value);
 }

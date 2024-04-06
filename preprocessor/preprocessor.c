@@ -455,6 +455,8 @@ struct vector* preprocessor_build_value_vector_for_integer(int value)
   return token_vec;
 }
 
+#warning "Implement build value vector for string token"
+
 void preprocessor_token_vec_push_keyword_and_identifier(struct vector* token_vec, const char* keyword, const char* identifier)
 {
   struct token t1 = {};
