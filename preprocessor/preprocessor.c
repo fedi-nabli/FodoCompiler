@@ -1700,7 +1700,14 @@ void preprocessor_handle_include_token(struct compile_process* compiler)
   struct compile_process* new_compile_process = compile_include(file_path_token->sval, compiler);
   if (!new_compile_process)
   {
-    #warning "Check for static includes"
+    PREPROCESSOR_STATIC_INCLUDE_HANDLER_POST_CREATION handler = preprocessor_static_include_handler_for(file_path_token->sval);
+    if (handler)
+    {
+      // Handle it
+      preprocessor_create_static_include(compiler->preprocessor, file_path_token->sval, handler);
+      return;
+    }
+    
     compiler_error(compiler, "The file provided does not exist, unable to include %s\n", file_path_token->sval);
   }
 

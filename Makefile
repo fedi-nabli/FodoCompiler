@@ -1,4 +1,4 @@
-OBJECTS = ./build/compiler.o ./build/cprocess.o ./build/lexer.o ./build/lex_process.o ./build/token.o ./build/parser.o ./build/node.o ./build/expressionable.o ./build/datatype.o ./build/scope.o ./build/symresolver.o ./build/array.o ./build/fixup.o ./build/codegen.o ./build/stackframe.o ./build/resolver.o ./build/rdefault.o ./build/helper.o ./build/preprocessor.o ./build/native.o ./build/helpers/buffer.o ./build/helpers/vector.o
+OBJECTS = ./build/compiler.o ./build/cprocess.o ./build/lexer.o ./build/lex_process.o ./build/token.o ./build/parser.o ./build/node.o ./build/expressionable.o ./build/datatype.o ./build/scope.o ./build/symresolver.o ./build/array.o ./build/fixup.o ./build/codegen.o ./build/stackframe.o ./build/resolver.o ./build/rdefault.o ./build/helper.o ./build/preprocessor/preprocessor.o ./build/preprocessor/native.o ./build/preprocessor/static-include.o ./build/preprocessor/static-includes/stdarg.o ./build/preprocessor/static-includes/stddef.o ./build/helpers/buffer.o ./build/helpers/vector.o
 INCLUDES = -I./
 
 all: ${OBJECTS}
@@ -58,11 +58,20 @@ all: ${OBJECTS}
 ./build/helper.o: ./helper.c
 	gcc ./helper.c ${INCLUDES} -g -c -o ./build/helper.o
 
-./build/preprocessor.o: ./preprocessor/preprocessor.c
-	gcc ./preprocessor/preprocessor.c ${INCLUDES} -g -c -o ./build/preprocessor.o
+./build/preprocessor/preprocessor.o: ./preprocessor/preprocessor.c
+	gcc ./preprocessor/preprocessor.c ${INCLUDES} -g -c -o ./build/preprocessor/preprocessor.o
 
-./build/native.o: ./preprocessor/native.c
-	gcc ./preprocessor/native.c ${INCLUDES} -g -c -o ./build/native.o
+./build/preprocessor/native.o: ./preprocessor/native.c
+	gcc ./preprocessor/native.c ${INCLUDES} -g -c -o ./build/preprocessor/native.o
+
+./build/preprocessor/static-include.o: ./preprocessor/static-include.c
+	gcc ./preprocessor/static-include.c ${INCLUDES} -g -c -o ./build/preprocessor/static-include.o
+
+./build/preprocessor/static-includes/stdarg.o: ./preprocessor/static-includes/stdarg.c
+	gcc ./preprocessor/static-includes/stdarg.c ${INCLUDES} -g -c -o ./build/preprocessor/static-includes/stdarg.o
+
+./build/preprocessor/static-includes/stddef.o: ./preprocessor/static-includes/stddef.c
+	gcc ./preprocessor/static-includes/stddef.c ${INCLUDES} -g -c -o ./build/preprocessor/static-includes/stddef.o
 
 ./build/helpers/buffer.o: ./helpers/buffer.c
 	gcc ./helpers/buffer.c -o ./build/helpers/buffer.o -g -c
