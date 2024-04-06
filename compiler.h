@@ -6,6 +6,15 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#ifdef _WIN32
+  #include <windows.h>
+  #define PATH_MAX MAX_PATH
+#elif __linux__
+  #include <linux/limits.h>
+#elif __APPLE__
+  #include <limits.h>
+#endif
+
 #define FAIL_ERR(message) assert(0 == 1 && message)
 
 #define S_EQ(str, str2) \
