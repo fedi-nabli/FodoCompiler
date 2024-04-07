@@ -86,3 +86,10 @@ struct datatype datatype_for_string()
   dtype.size = DATA_SIZE_DWORD;
   return dtype;
 }
+
+void datatype_set_void(struct datatype* dtype)
+{
+  dtype->type = DATA_TYPE_VOID;
+  dtype->type_str = "void";
+  dtype->size = DATA_SIZE_ZERO;
+}

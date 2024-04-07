@@ -312,6 +312,7 @@ enum
 {
   RESOLVER_ENTITY_TYPE_VARIABLE,
   RESOLVER_ENTITY_TYPE_FUNCTION,
+  RESOLVER_ENTITY_TYPE_NATIVE_FUNCTION,
   RESOLVER_ENTITY_TYPE_STRUCTURE,
   RESOLVER_ENTITY_TYPE_FUNCTION_CALL,
   RESOLVER_ENTITY_TYPE_ARRAY_BRACKET,
@@ -1103,6 +1104,11 @@ struct resolver_entity
       // How much is the depth we need to find the value
       int depth;
     } indirection;
+
+    struct resolver_native_function
+    {
+      struct symbol* symbol;
+    } native_func;
   };
 
   struct entity_last_resolve
@@ -1163,6 +1169,7 @@ struct native_function;
 struct generator_entity_address;
 
 typedef void (*ASM_PUSH_PROTOTYPE)(const char* ins, ...);
+typedef void (*GENERATOR_FUNCTION_RETURN)(struct datatype* dtype, const char* fmt, ...);
 typedef void (*NATIVE_FUNCTION_CALL)(struct generator* generator, struct native_function* func, struct vector* arguments);
 typedef void (*GENERATOR_GENERATE_EXPRESSION)(struct generator* generator, struct node* node, int flags);
 typedef void (*GENERATOR_END_EXPRESSION)(struct generator* generator);
@@ -1179,6 +1186,7 @@ struct generator_entity_address
 struct generator
 {
   ASM_PUSH_PROTOTYPE asm_push;
+  GENERATOR_FUNCTION_RETURN ret;
   GENERATOR_GENERATE_EXPRESSION gen_exp;
   GENERATOR_END_EXPRESSION end_exp;
   GENERATOR_ENTITY_ADDRESS entity_address;
@@ -1229,6 +1237,7 @@ struct preprocessor* preprocessor_create(struct compile_process* compiler);
 int preprocessor_run(struct compile_process* compiler);
 
 // Native function halpers
+struct native_function* native_function_get(struct compile_process* compiler, const char* name);
 struct symbol* native_create_function(struct compile_process* compiler, const char* name, struct native_function_callbacks* callbacks);
 
 // Compile process helper functions
@@ -1275,6 +1284,7 @@ size_t datatype_element_size(struct datatype* dtype);
 size_t datatype_size_no_ptr(struct datatype* dtype);
 struct datatype datatype_for_numeric();
 struct datatype datatype_for_string();
+void datatype_set_void(struct datatype* dtype);
 
 // < Node functions start
 

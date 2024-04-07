@@ -30,6 +30,7 @@ enum
 // < Native functions helpers
 
 void asm_push(const char* ins, ...);
+void asm_push_ins_with_datatype(struct datatype* dtype, const char* fmt, ...);
 void codegen_gen_exp(struct generator* generator, struct node* node, int flags);
 void codegen_end_exp(struct generator* generator);
 void codegen_entity_address(struct generator* generator, struct resolver_entity* entity, struct generator_entity_address* address_out);
@@ -45,6 +46,7 @@ struct _x86_generator_private
 
 struct generator x86_generator = {
   .asm_push = asm_push,
+  .ret = asm_push_ins_with_datatype,
   .gen_exp = codegen_gen_exp,
   .end_exp = codegen_end_exp,
   .entity_address = codegen_entity_address,
@@ -275,6 +277,19 @@ void asm_push(const char* ins, ...)
   va_start(args, ins);
   asm_push_args(ins, args);
   va_end(args);
+}
+
+void asm_push_ins_with_datatype(struct datatype* dtype, const char* fmt, ...)
+{
+  char tmp_buf[200];
+  sprintf(tmp_buf, "push %s", fmt);
+  va_list args;
+  va_start(args, fmt);
+  asm_push_args(tmp_buf, args);
+  va_end(args);
+
+  assert(current_function);
+  stackframe_push(current_function, &(struct stack_frame_element){.type=STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, .name="result_value", .flags=STACK_FRAME_ELEMENT_FLAG_HAS_DATATYPE, .data.dtype=*dtype});
 }
 
 void asm_push_no_nl(const char* ins, ...)
@@ -1696,6 +1711,21 @@ void codegen_generate_entity_access_for_entity(struct resolver_result* result, s
 
 void codegen_generate_entity_access(struct resolver_result* result, struct resolver_entity* root_assignment_entity, struct node* top_most_node, struct history* history)
 {
+  // For natuve entity access
+  if (root_assignment_entity->type == RESOLVER_ENTITY_TYPE_NATIVE_FUNCTION)
+  {
+    struct native_function* native_func = native_function_get(current_process, root_assignment_entity->name);
+    if (native_func)
+    {
+      asm_push("; NATIVE FUNCTION %s", root_assignment_entity->name);
+      struct resolver_entity* func_call_entity = resolver_result_entity_next(root_assignment_entity);
+      assert(func_call_entity && func_call_entity->type == RESOLVER_ENTITY_TYPE_FUNCTION_CALL);
+      native_func->callbacks.call(&x86_generator, native_func, func_call_entity->func_call_data.arguments);
+      return;
+    }
+  }
+
+  // For normal entity access
   codegen_generate_entity_access_start(result, root_assignment_entity, history);
   struct resolver_entity* current = resolver_result_entity_next(root_assignment_entity);
   while (current)
