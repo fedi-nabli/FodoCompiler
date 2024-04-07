@@ -1,6 +1,8 @@
 #include "compiler.h"
 #include "preprocessor/preprocessor.h"
 
+#include <stdlib.h>
+
 int preprocessor_line_macro_evaluate(struct preprocessor_definition* definition, struct preprocessor_function_arguments* arguments)
 {
   struct preprocessor* preprocessor = definition->preprocessor;
@@ -33,4 +35,12 @@ void preprocessor_create_definitions(struct preprocessor* preprocessor)
 {
   #warning "Add other predefined macro functions"
   preprocessor_definition_create_native(preprocessor, "__LINE__", preprocessor_line_macro_evaluate, preprocessor_line_macro_value);
+}
+
+struct symbol* native_create_function(struct compile_process* compiler, const char* name, struct native_function_callbacks* callbacks)
+{
+  struct native_function* func = calloc(1, sizeof(struct native_function));
+  memcpy(&func->callbacks, callbacks, sizeof(func->callbacks));
+  func->name = name;
+  return symresolver_register_symbol(compiler, name, SYMBOL_TYPE_NATIVE_FUNCTION, func);
 }

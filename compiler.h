@@ -67,6 +67,9 @@
 #define C_STACK_ALIGNMENT 16
 #define C_ALIGN(size) (size % C_STACK_ALIGNMENT) ? size + (C_STACK_ALIGNMENT - (size % C_STACK_ALIGNMENT)) : size
 
+#define GENERATOR_BEGIN_EXPRESSION(gen)
+#define GENERATOR_END_EXPRESSION(gen) gen->end_exp(gen)
+
 // Lexer case defintions end
 
 enum
@@ -1153,6 +1156,52 @@ struct resolver_default_entity_data
 
 // > Resolver default structures end
 
+// < Native functions structures start
+
+struct generator;
+struct native_function;
+struct generator_entity_address;
+
+typedef void (*ASM_PUSH_PROTOTYPE)(const char* ins, ...);
+typedef void (*NATIVE_FUNCTION_CALL)(struct generator* generator, struct native_function* func, struct vector* arguments);
+typedef void (*GENERATOR_GENERATE_EXPRESSION)(struct generator* generator, struct node* node, int flags);
+typedef void (*GENERATOR_END_EXPRESSION)(struct generator* generator);
+typedef void (*GENERATOR_ENTITY_ADDRESS)(struct generator* generator, struct resolver_entity* entity, struct generator_entity_address* address_out);
+
+struct generator_entity_address
+{
+  bool is_stack;
+  long offset;
+  const char* address;
+  const char* base_address;
+};
+
+struct generator
+{
+  ASM_PUSH_PROTOTYPE asm_push;
+  GENERATOR_GENERATE_EXPRESSION gen_exp;
+  GENERATOR_END_EXPRESSION end_exp;
+  GENERATOR_ENTITY_ADDRESS entity_address;
+
+  struct compile_process* compiler;
+
+  // Private data for the generator
+  void* private;
+};
+
+struct native_function_callbacks
+{
+  NATIVE_FUNCTION_CALL call;
+};
+
+struct native_function
+{
+  const char* name;
+  struct native_function_callbacks callbacks;
+};
+
+// > Native functions structures end
+
 // Compiler error & warning functions
 void compiler_error(struct compile_process* compiler, const char* msg, ...);
 void compiler_warning(struct compile_process* compiler, const char* msg, ...);
@@ -1178,6 +1227,9 @@ struct code_generator* codegenerator_new(struct compile_process* process);
 // Preprocessor global functions
 struct preprocessor* preprocessor_create(struct compile_process* compiler);
 int preprocessor_run(struct compile_process* compiler);
+
+// Native function halpers
+struct symbol* native_create_function(struct compile_process* compiler, const char* name, struct native_function_callbacks* callbacks);
 
 // Compile process helper functions
 const char* compiler_include_dir_begin(struct compile_process* process);
@@ -1317,6 +1369,7 @@ void symresolver_end_table(struct compile_process* process);
 struct symbol* symresolver_get_symbol(struct compile_process* process, const char* name);
 void symresolver_build_for_node(struct compile_process* process, struct node* node);
 struct symbol* symresolver_get_symbol_for_native_function(struct compile_process* process, const char* name);
+struct symbol* symresolver_register_symbol(struct compile_process* process, const char* sym_name, int type, void* data);
 
 // > Symbol resolver helper functions end
 
