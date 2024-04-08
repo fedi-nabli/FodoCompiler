@@ -455,7 +455,15 @@ struct vector* preprocessor_build_value_vector_for_integer(int value)
   return token_vec;
 }
 
-#warning "Implement build value vector for string token"
+struct vector* preprocessor_build_value_vector_for_string(const char* value)
+{
+  struct vector* token_vec = vector_create(sizeof(struct token));
+  struct token t1 = {};
+  t1.type = TOKEN_TYPE_STRING;
+  t1.sval = value;
+  vector_push(token_vec, &t1);
+  return token_vec;
+}
 
 void preprocessor_token_vec_push_keyword_and_identifier(struct vector* token_vec, const char* keyword, const char* identifier)
 {

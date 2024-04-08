@@ -106,6 +106,7 @@ void preprocessor_create_definitions(struct preprocessor* preprocessor);
 // Preprocessor global functions
 struct token* preprocessor_previous_token(struct compile_process* compiler);
 struct vector* preprocessor_build_value_vector_for_integer(int value);
+struct vector* preprocessor_build_value_vector_for_string(const char* value);
 struct preprocessor_definition* preprocessor_definition_create_native(struct preprocessor* preprocessor, const char* name, PREPROCESSOR_DEFINITION_NATIVE_CALL_EVALUATION evaluate, PREPROCESSOR_DEFINITION_NATIVE_CALL_VALUE value);
 
 PREPROCESSOR_STATIC_INCLUDE_HANDLER_POST_CREATION preprocessor_static_include_handler_for(const char* filename);

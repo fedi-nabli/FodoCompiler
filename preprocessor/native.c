@@ -3,6 +3,37 @@
 
 #include <stdlib.h>
 
+int preprocessor_file_macro_evaluate(struct preprocessor_definition* definition, struct preprocessor_function_arguments* arguments)
+{
+  struct preprocessor* preprocessor = definition->preprocessor;
+  struct compile_process* compiler = preprocessor->compiler;
+
+  if (arguments)
+  {
+    compiler_error(compiler, "__FILE__ macro expects no arguments");
+  }
+
+  if (compiler->pos.filename)
+  {
+    return 1;
+  }
+
+  return -1;
+}
+
+struct vector* preprocessor_file_macro_value(struct preprocessor_definition* definition, struct preprocessor_function_arguments* arguments)
+{
+  struct preprocessor* preprocessor = definition->preprocessor;
+  struct compile_process* compiler = preprocessor->compiler;
+
+  if (arguments)
+  {
+    compiler_error(compiler, "__FILE__ macro expects no arguments");
+  }
+
+  return preprocessor_build_value_vector_for_string(compiler->pos.filename);
+}
+
 int preprocessor_line_macro_evaluate(struct preprocessor_definition* definition, struct preprocessor_function_arguments* arguments)
 {
   struct preprocessor* preprocessor = definition->preprocessor;
@@ -33,7 +64,7 @@ struct vector* preprocessor_line_macro_value(struct preprocessor_definition* def
 
 void preprocessor_create_definitions(struct preprocessor* preprocessor)
 {
-  #warning "Add other predefined macro functions"
+  preprocessor_definition_create_native(preprocessor, "__FILE__", preprocessor_file_macro_evaluate, preprocessor_file_macro_value);
   preprocessor_definition_create_native(preprocessor, "__LINE__", preprocessor_line_macro_evaluate, preprocessor_line_macro_value);
 }
 
