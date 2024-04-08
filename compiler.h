@@ -1218,6 +1218,7 @@ struct native_function
 // > Native functions structures end
 
 // Compiler error & warning functions
+void compiler_node_error(struct node* node, const char* msg, ...);
 void compiler_error(struct compile_process* compiler, const char* msg, ...);
 void compiler_warning(struct compile_process* compiler, const char* msg, ...);
 
