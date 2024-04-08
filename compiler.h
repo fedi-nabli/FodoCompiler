@@ -107,6 +107,13 @@ enum
   PARSE_GENERAL_ERROR
 };
 
+// Validator enums
+enum
+{
+  VALIDATOR_ALL_OK,
+  VALIDATOR_GENERAL_ERROR
+};
+
 // Codegen enums
 enum
 {
@@ -1227,6 +1234,8 @@ void compile_process_push_char(struct lex_process* lex_process, char c);
 int lex(struct lex_process* process);
 // Parse function
 int parse(struct compile_process* process);
+// Validator function
+int validate(struct compile_process* process);
 // Codegen funciton
 int codegen(struct compile_process* process);
 // Codegen register function

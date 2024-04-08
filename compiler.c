@@ -116,6 +116,11 @@ int compile_file(const char* filename, const char* out_filename, int flags)
     return PARSE_GENERAL_ERROR;
   }
 
+  if (validate(process) != VALIDATOR_ALL_OK)
+  {
+    return VALIDATOR_GENERAL_ERROR;
+  }
+
   // Perform code generation
   if (codegen(process) != CODEGEN_ALL_OK)
   {
