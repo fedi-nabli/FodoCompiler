@@ -6,6 +6,14 @@ int sum(int num, ...)
   va_list list;
   va_start(list, num);
 
+  int i = 0;
+  for (i = 0; i < num; i++)
+  {
+    result += va_arg(list, int);
+  }
+
+  va_end(list);
+
   return result;
 }
 
