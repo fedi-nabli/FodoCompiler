@@ -21,7 +21,7 @@ sudo apt-get install g++-multilib
 ```
 
 - To run th project locally, you need `gcc` and `make` installed. Works better on linux.
-- Step 1: Clone the repository locally `git clone https://github.com/FodoOS/FodoCompiler.git` or `git clone https://github.com/fedi-nabli/FodoCompiler.git`.
+- Step 1: Clone the repository locally `git clone https://github.com/fedi-nabli/FodoCompiler.git`.
 - Step 2: Run `make` or `make clean` then `make` for clean build.
 - Step 3: Run `./main` and the output should be `'Everything compiled ok'`.
 
