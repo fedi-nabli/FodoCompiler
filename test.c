@@ -1,9 +1,4 @@
-int test()
-{
-
-}
-
-int test()
+int test(int a, int b)
 {
 
 }

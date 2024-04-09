@@ -1390,6 +1390,7 @@ struct symbol* symresolver_get_symbol(struct compile_process* process, const cha
 void symresolver_build_for_node(struct compile_process* process, struct node* node);
 struct symbol* symresolver_get_symbol_for_native_function(struct compile_process* process, const char* name);
 struct symbol* symresolver_register_symbol(struct compile_process* process, const char* sym_name, int type, void* data);
+struct resolver_entity* resolver_get_variable_from_local_scope(struct resolver_process* resolver, const char* var_name);
 
 // > Symbol resolver helper functions end
 

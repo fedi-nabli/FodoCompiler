@@ -41,8 +41,20 @@ void validate_symbol_unique(const char* name, const char* type_of_symbol, struct
   }
 }
 
+void validate_variable(struct node* var_node)
+{
+  struct resolver_entity* entity = resolver_get_variable_from_local_scope(validator_current_compile_process->resolver, var_node->var.name);
+  if (entity)
+  {
+    compiler_node_error(var_node, "You have already defined the variable %s in the given scope", var_node->var.name);
+  }
+
+  resolver_default_new_scope_entity(validator_current_compile_process->resolver, var_node, 0, 0);
+}
+
 void validate_function_argument(struct node* func_argument_var_node)
 {
+  validate_variable(func_argument_var_node);
 }
 
 void validate_function_arguments(struct function_arguments* func_arguments)
