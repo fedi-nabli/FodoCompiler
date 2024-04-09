@@ -20,6 +20,11 @@ bool datatype_is_struct_or_union_non_pointer(struct datatype* dtype)
   return dtype->type != DATA_TYPE_UNKNOWN && !datatype_is_primitive(dtype) && !(dtype->flags & DATATYPE_FLAG_IS_POINTER);
 }
 
+bool datatype_is_void_no_ptr(struct datatype* dtype)
+{
+  return S_EQ(dtype->type_str, "void") && !(dtype->flags & DATATYPE_FLAG_IS_POINTER);
+}
+
 size_t datatype_size(struct datatype* dtype)
 {
   if (dtype->flags & DATATYPE_FLAG_IS_POINTER && dtype->pointer_depth > 0)

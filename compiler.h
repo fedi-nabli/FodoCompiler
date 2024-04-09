@@ -1288,6 +1288,7 @@ bool datatype_is_struct_or_union_for_name(const char* name);
 bool datatype_is_struct_or_union(struct datatype* dtype);
 bool datatype_is_primitive(struct datatype* dtype);
 bool datatype_is_struct_or_union_non_pointer(struct datatype* dtype);
+bool datatype_is_void_no_ptr(struct datatype* dtype);
 size_t datatype_size(struct datatype* dtype);
 size_t datatype_size_for_array_access(struct datatype* dtype);
 size_t datatype_element_size(struct datatype* dtype);

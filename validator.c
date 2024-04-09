@@ -4,6 +4,12 @@
 static struct compile_process* validator_current_compile_process;
 static struct node* current_function;
 
+// < Validator global functions start
+
+void validate_body(struct body* body);
+
+// > Validator global functions end
+
 void validation_new_scope(int flags)
 {
   resolver_default_new_scope(validator_current_compile_process->resolver, flags);
@@ -69,12 +75,92 @@ void validate_function_arguments(struct function_arguments* func_arguments)
   }
 }
 
+void validate_identifier(struct node* node)
+{
+  struct resolver_result* result = resolver_follow(validator_current_compile_process->resolver, node);
+  if (!resolver_result_ok(result))
+  {
+    compiler_node_error(node, "The variable %s does not exist", node->sval);
+  }
+}
+
+void validate_expressionable(struct node* node)
+{
+  switch (node->type)
+  {
+    case NODE_TYPE_IDENTIFIER:
+      validate_identifier(node);
+      break;
+  }
+}
+
+void validate_return_node(struct node* node)
+{
+  if (node->stmt.return_stmt.exp)
+  {
+    if (datatype_is_void_no_ptr(&current_function->func.rtype))
+    {
+      compiler_node_error(node, "You are returning a value in a function %s which has a return type of void\n", current_function->func.name);
+    }
+
+    validate_expressionable(node->stmt.return_stmt.exp);
+  }
+}
+
+void validate_if_stmt(struct node* node)
+{
+  validation_new_scope(0);
+  validate_body(&node->stmt.if_stmt.body_node->body);
+  validation_end_scope();
+}
+
+void validate_else_stmt(struct node* node)
+{
+  validation_new_scope(0);
+  validate_body(&node->stmt.else_stmt.body_node->body);
+  validation_end_scope();
+}
+
+void validate_for_stmt(struct node* node)
+{
+  validation_new_scope(0);
+  validate_body(&node->stmt.for_stmt.body_node->body);
+  validation_end_scope();
+}
+
+void validate_statement(struct node* node)
+{
+  switch (node->type)
+  {
+    case NODE_TYPE_VARIABLE:
+      validate_variable(node);
+      break;
+
+    case NODE_TYPE_STATEMENT_RETURN:
+      validate_return_node(node);
+      break;
+
+    case NODE_TYPE_STATEMENT_IF:
+      validate_if_stmt(node);
+      break;
+
+    case NODE_TYPE_STATEMENT_ELSE:
+      validate_else_stmt(node);
+      break;
+
+    case NODE_TYPE_STATEMENT_FOR:
+      validate_for_stmt(node);
+      break;
+  }
+}
+
 void validate_body(struct body* body)
 {
   vector_set_peek_pointer(body->statements, 0);
   struct node* statement = vector_peek_ptr(body->statements);
   while (statement)
   {
+    validate_statement(statement);
     statement = vector_peek_ptr(body->statements);
   }
 }
@@ -111,6 +197,10 @@ void validate_node(struct node* node)
 {
   switch (node->type)
   {
+    case NODE_TYPE_VARIABLE:
+      validate_variable(node);
+      break;
+
     case NODE_TYPE_FUNCTION:
       validate_function_node(node);
       break;
