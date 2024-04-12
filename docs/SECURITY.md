@@ -7,7 +7,7 @@ You can run a program to do some arihtmetic operations on variables.
 
 | Version                        | Supported          |
 | ------------------------------ | ------------------ |
-| 0.0.1 (currently version)      | :white_check_mark: |
+| 1.0.0 (currently version)      | :white_check_mark: |
 
 ## Reporting a Vulnerability
 
